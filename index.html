@@ -1209,13 +1209,31 @@
     const {name, mode} = _histPending;
 
     if(mode === "hide"){
+      // save to localStorage
       try{
         const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events") || "[]");
         if(!hidden.includes(name)) hidden.push(name);
         localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
       }catch(e){ console.error("localStorage error", e); }
+      // remove row from DOM directly — same as delete, no re-fetch
+      const allRows = document.querySelectorAll('.hist-row');
+      allRows.forEach(row => {
+        const cell = row.querySelector('.ev-name');
+        if(cell && cell.textContent.replace(/^[▸▾]\s*/,'').trim() === name){
+          const idx = row.dataset.idx;
+          const detail = document.querySelector('[data-detail="'+idx+'"]');
+          if(detail) detail.remove();
+          row.remove();
+        }
+      });
+      const remaining = document.querySelectorAll('.hist-row');
+      if(!remaining.length){
+        const empty = document.getElementById('histEmpty');
+        if(empty) empty.style.display = 'block';
+        const totals = document.getElementById('histTotals');
+        if(totals) totals.innerHTML = '';
+      }
       closeHistDelete();
-      loadHistory();
       return;
     }
 
@@ -1265,26 +1283,30 @@
         return;
       }
 
-      // Immediately hide the event from the list (instant UI feedback)
-      // then reload from DB after a short delay to confirm removal
-      try{
-        const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events")||"[]");
-        if(!hidden.includes(name)) hidden.push(name);
-        localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
-      }catch(_){}
+      // Delete succeeded — remove the rows from the DOM directly.
+      // Do NOT call loadHistory() — it re-fetches and Supabase may
+      // still return the deleted rows briefly, causing them to reappear.
+      // Instead: find the row by event name and remove it from the table.
+      const allRows = document.querySelectorAll('.hist-row');
+      allRows.forEach(row => {
+        const cell = row.querySelector('.ev-name');
+        if(cell && cell.textContent.replace(/^[▸▾]\s*/,'').trim() === name){
+          // remove the detail row too if it exists
+          const idx = row.dataset.idx;
+          const detail = document.querySelector('[data-detail="'+idx+'"]');
+          if(detail) detail.remove();
+          row.remove();
+        }
+      });
+      // If no rows left, show the empty message
+      const remaining = document.querySelectorAll('.hist-row');
+      if(!remaining.length){
+        const empty = document.getElementById('histEmpty');
+        if(empty) empty.style.display = 'block';
+        const totals = document.getElementById('histTotals');
+        if(totals) totals.innerHTML = '';
+      }
       closeHistDelete();
-      loadHistory();
-      // Also reload after 1.5s in case Supabase needs a moment
-      setTimeout(()=>{
-        // clear the temp hide now that DB is clean
-        try{
-          const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events")||"[]");
-          const idx = hidden.indexOf(name);
-          if(idx>-1) hidden.splice(idx,1);
-          localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
-        }catch(_){}
-        loadHistory();
-      }, 1500);
 
     }catch(err){
       confirmBtn.textContent = origLabel;
