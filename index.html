@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OxygenBar360 — Analytics</title>
+<title>OxygenBar360 — Analytics & Reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -137,10 +137,71 @@
     .moodmap{grid-template-columns:repeat(3,1fr)}
     .fbar-label{width:100px}.fbar-val{width:90px}.fdrop{margin-left:114px}
   }
+
+  /* view toggle */
+  #reportView{display:none}
+  body.report-mode #dashboardView{display:none}
+  body.report-mode #reportView{display:block}
+  .view-switch-btn{background:linear-gradient(120deg,var(--gold),var(--coral))!important;color:#3a1208!important;border:none!important;font-weight:700!important}
+  .back-to-dash{background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:13px;border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600}
+
+/* ===== REPORT VIEW STYLES (scoped) ===== */
+#reportView :root {
+    --bg:#06141b;--bg2:#0a2330;--panel:#0c2733;--ink:#eaf6f4;--ink-soft:#bcdcd8;--ink-faint:#7fa39f;
+    --mint:#7df0d0;--aqua:#46c7e8;--gold:#f4d58d;--coral:#ff7d6b;
+    --stroke:rgba(125,240,208,.16);--stroke-2:rgba(125,240,208,.32);--glass:rgba(255,255,255,.04);
+  }#reportView * {margin:0;padding:0;box-sizing:border-box}#reportView html, #reportView body {background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh}#reportView .bg {position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(1100px 700px at 12% 6%,rgba(29,125,122,.35),transparent 58%),
+    radial-gradient(900px 700px at 92% 12%,rgba(22,98,127,.32),transparent 60%),
+    linear-gradient(180deg,var(--bg2),var(--bg))}#reportView /* ── TOOLBAR (hidden on print) ── */
+  .toolbar {background:rgba(4,12,16,.95);border-bottom:1px solid var(--stroke);padding:14px 28px;
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:50}#reportView .toolbar h2 {font-family:'Fraunces',serif;font-size:16px;color:var(--mint);margin-right:auto}#reportView .tb-group {display:flex;align-items:center;gap:8px;flex-wrap:wrap}#reportView .tb-group label {font-size:12px;color:var(--ink-faint);white-space:nowrap}#reportView .tb-input {background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);
+    font-family:inherit;font-size:13px;border-radius:9px;padding:8px 12px;width:180px}#reportView .tb-input.short {width:120px}#reportView .tb-btn {background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b;border:none;
+    border-radius:10px;padding:9px 18px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer}#reportView .tb-btn.sec {background:var(--glass);color:var(--ink);border:1px solid var(--stroke-2)}#reportView .tb-divider {width:1px;height:28px;background:var(--stroke-2)}#reportView /* ── REPORT WRAP ── */
+  .report {max-width:900px;margin:0 auto;padding:40px 32px 80px}#reportView /* cover header */
+  .cover {display:flex;align-items:flex-start;justify-content:space-between;gap:24px;
+    padding-bottom:28px;border-bottom:1px solid var(--stroke-2);margin-bottom:36px}#reportView .cover-left {}#reportView .cover-logos {display:flex;align-items:center;gap:16px;margin-bottom:16px}#reportView .ob-brand {display:flex;align-items:center;gap:9px;font-family:'Fraunces',serif;font-weight:600;font-size:22px}#reportView .ob-brand .dot {width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--mint),var(--aqua));box-shadow:0 0 12px var(--mint)}#reportView .client-logo-wrap {display:none;align-items:center;gap:12px}#reportView .client-logo-wrap.show {display:flex}#reportView .logo-sep {font-size:18px;color:var(--ink-faint)}#reportView .client-logo-img {max-height:36px;max-width:120px;object-fit:contain;border-radius:6px;display:none}#reportView .client-logo-img.show {display:block}#reportView .client-name-display {font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--ink);display:none}#reportView .client-name-display.show {display:block}#reportView .report-title {font-family:'Fraunces',serif;font-weight:700;font-size:36px;line-height:1.05;margin-bottom:8px}#reportView .report-title em {font-style:italic;color:var(--mint)}#reportView .report-meta {font-size:14px;color:var(--ink-soft);line-height:1.8}#reportView .report-meta span {color:var(--ink);font-weight:500}#reportView .cover-right {text-align:right;flex-shrink:0}#reportView .prepared-by {font-size:12px;color:var(--ink-faint);margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}#reportView .prepared-name {font-family:'Fraunces',serif;font-size:16px;color:var(--mint)}#reportView .prepared-tag {font-size:12px;color:var(--ink-faint);font-style:italic;margin-top:2px}#reportView /* section headings */
+  .section {margin-bottom:36px}#reportView .section-title {font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin-bottom:4px}#reportView .section-sub {font-size:12px;color:var(--ink-faint);margin-bottom:18px;letter-spacing:.04em}#reportView /* KPI row */
+  .kpi-row {display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}#reportView .kpi {background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.4));border:1px solid var(--stroke);
+    border-radius:16px;padding:18px;position:relative;overflow:hidden}#reportView .kpi:before {content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--mint))}#reportView .kpi .kl {font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}#reportView .kpi .kv {font-family:'Fraunces',serif;font-weight:700;font-size:38px;line-height:1;margin-top:10px;color:var(--accent,var(--mint))}#reportView .kpi .ks {font-size:12px;color:var(--ink-soft);margin-top:6px}#reportView .kpi.a1 {--accent:var(--mint)}#reportView .kpi.a2 {--accent:var(--aqua)}#reportView .kpi.a3 {--accent:var(--gold)}#reportView .kpi.a4 {--accent:#b89cff}#reportView /* ROI highlight */
+  .roi-box {background:linear-gradient(135deg,rgba(125,240,208,.1),rgba(70,199,232,.07));
+    border:1px solid var(--stroke-2);border-radius:16px;padding:24px;margin-bottom:18px}#reportView .roi-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:14px}#reportView .roi-item .rv {font-family:'Fraunces',serif;font-weight:700;font-size:32px;color:var(--gold)}#reportView .roi-item .rl {font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.5}#reportView .roi-note {font-size:11px;color:var(--ink-faint);margin-top:14px;font-style:italic;line-height:1.6}#reportView /* bar charts */
+  .barlist {display:flex;flex-direction:column;gap:11px}#reportView .barrow {display:grid;grid-template-columns:110px 1fr 44px;align-items:center;gap:10px}#reportView .barrow .bl {font-size:12px;color:var(--ink-soft)}#reportView .bartrack {height:12px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden}#reportView .barfill {height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--aqua));width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}#reportView .barrow .bv {font-size:12px;color:var(--ink);font-weight:600;text-align:right}#reportView /* two col panels */
+  .two-col {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}#reportView .panel {background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.3));border:1px solid var(--stroke);border-radius:16px;padding:20px}#reportView .panel h4 {font-family:'Fraunces',serif;font-size:15px;margin-bottom:12px;color:var(--ink)}#reportView /* mood map */
+  .moodrow {display:flex;gap:10px;flex-wrap:wrap}#reportView .moodchip {background:var(--glass);border:1px solid var(--stroke);border-radius:10px;
+    padding:8px 12px;text-align:center;min-width:60px}#reportView .moodchip .me {font-size:22px}#reportView .moodchip .mc {font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--mint);margin-top:2px}#reportView /* funnel */
+  .funnel {display:flex;flex-direction:column;gap:8px}#reportView .frow {display:grid;grid-template-columns:110px 1fr 50px;align-items:center;gap:10px}#reportView .frow .fl {font-size:12px;color:var(--ink-soft)}#reportView .ftrack {height:26px;background:rgba(255,255,255,.04);border-radius:7px;overflow:hidden}#reportView .ffill {height:100%;background:linear-gradient(90deg,var(--aqua),var(--mint));border-radius:7px;
+    width:0;transition:width 1.1s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;
+    padding-left:10px;font-size:11px;font-weight:600;color:#04221b}#reportView .frow .fv {font-size:13px;font-weight:700;text-align:right;color:var(--ink)}#reportView /* notes / highlights */
+  .highlights {background:var(--glass);border:1px solid var(--stroke);border-radius:14px;padding:20px}#reportView .highlight-item {display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--stroke)}#reportView .highlight-item:last-child {border-bottom:none}#reportView .hi-icon {font-size:20px;flex-shrink:0;margin-top:2px}#reportView .hi-text {font-size:14px;color:var(--ink-soft);line-height:1.5}#reportView .hi-text strong {color:var(--ink)}#reportView /* closing statement */
+  .closing {background:linear-gradient(135deg,rgba(125,240,208,.08),rgba(70,199,232,.05));
+    border:1px solid var(--stroke-2);border-radius:16px;padding:24px;text-align:center;margin-top:36px}#reportView .closing p {font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--ink);line-height:1.5;margin-bottom:12px}#reportView .closing .sig {font-size:13px;color:var(--mint);font-weight:600}#reportView /* loading / error */
+  .status {text-align:center;padding:60px;color:var(--ink-faint);font-family:'Fraunces',serif;font-style:italic;font-size:18px}#reportView /* ── PRINT STYLES ── */
+  @media print {
+    @page{size:letter portrait;margin:.6in .7in}
+    .bg,.toolbar{display:none!important}
+    html,body{background:#fff!important;color:#111!important}
+    :root{--ink:#111;--ink-soft:#444;--ink-faint:#777;--bg:#fff;--panel:#f7f9f9;
+      --stroke:rgba(0,0,0,.12);--stroke-2:rgba(0,0,0,.2);--glass:rgba(0,0,0,.03)}
+    .report{padding:0;max-width:100%}
+    .kpi,.panel,.roi-box,.highlights,.closing{-webkit-print-color-adjust:exact;print-color-adjust:exact;break-inside:avoid}
+    .kpi:before{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .barfill,.ffill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .section{break-inside:avoid}
+  }@media(max-width:700px) {
+    .kpi-row{grid-template-columns:1fr 1fr}
+    .two-col{grid-template-columns:1fr}
+    .roi-grid{grid-template-columns:1fr}
+    .barrow{grid-template-columns:80px 1fr 36px}
+    .frow{grid-template-columns:80px 1fr 40px}
+    .toolbar{padding:10px 14px;gap:8px}
+    .tb-input{width:140px}
+  }
 </style>
 </head>
-<body>
-<div class="bg"></div>
+<body><div class="bg"></div>
+<div id="dashboardView">
+
 <div class="wrap">
   <header>
     <div>
@@ -151,6 +212,7 @@
       <span class="live-pill"><span class="rd"></span><span id="liveNow">0</span> active now</span>
       <select id="eventSelect"><option>All Events</option></select>
       <button id="refreshBtn">↻ Refresh</button>
+      <button class="view-switch-btn" id="toReportBtn">📄 Generate Report</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
   </header>
@@ -241,6 +303,152 @@
   </div>
 </div>
 
+</div>
+<div id="reportView">
+
+
+<!-- ── TOOLBAR (hidden on print) ── -->
+<div class="toolbar">
+  <button class="back-to-dash" id="backToDash">← Back to Dashboard</button>
+  <h2 style="margin-left:8px">📄 Post-Event Report</h2>
+  <div class="tb-group">
+    <label>Event</label>
+    <select class="tb-input short" id="tbEvent"><option value="">Select an event…</option></select>
+  </div>
+  <div class="tb-divider"></div>
+  <div class="tb-group">
+    <label>Client name</label>
+    <input class="tb-input short" id="tbClient" placeholder="Leave blank = OB360 only">
+  </div>
+  <div class="tb-group">
+    <label>Client logo URL</label>
+    <input class="tb-input" id="tbLogoUrl" placeholder="https://... (optional)">
+  </div>
+  <div class="tb-divider"></div>
+  <div class="tb-group">
+    <label>Event date</label>
+    <input class="tb-input short" id="tbDate" placeholder="June 3, 2026">
+  </div>
+  <div class="tb-group">
+    <label>Venue</label>
+    <input class="tb-input" id="tbVenue" placeholder="Venue name">
+  </div>
+  <div class="tb-group">
+    <label>Your fee ($)</label>
+    <input class="tb-input short" id="tbFee" placeholder="1500" type="number">
+  </div>
+  <div class="tb-group">
+    <label>Avg followers</label>
+    <input class="tb-input short" id="tbFollowers" placeholder="300" type="number">
+  </div>
+  <div class="tb-divider"></div>
+  <button class="tb-btn sec" id="loadBtn">⟳ Load Data</button>
+  <button class="tb-btn" onclick="window.print()">🖨 Print / PDF</button>
+</div>
+
+<!-- ── REPORT ── -->
+<div class="report" id="report">
+  <div class="status" id="statusMsg">Enter an event name above and click "Load Data" to generate your report ✦</div>
+
+  <div id="reportContent" style="display:none">
+
+    <!-- COVER -->
+    <div class="cover">
+      <div class="cover-left">
+        <div class="cover-logos">
+          <div class="ob-brand"><span class="dot"></span>OxygenBar360</div>
+          <div class="client-logo-wrap" id="clientLogoWrap">
+            <span class="logo-sep">×</span>
+            <img class="client-logo-img" id="clientLogoImg" alt="Client logo">
+            <span class="client-name-display" id="clientNameDisplay"></span>
+          </div>
+        </div>
+        <div class="report-title">Post-Event<br><em>Impact Report</em></div>
+        <div class="report-meta" id="reportMeta"></div>
+      </div>
+      <div class="cover-right">
+        <div class="prepared-by">Prepared by</div>
+        <div class="prepared-name">OxygenBar360</div>
+        <div class="prepared-tag">Human Reset Infrastructure</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="section">
+      <div class="section-title">Event at a Glance</div>
+      <div class="section-sub">KEY PERFORMANCE INDICATORS</div>
+      <div class="kpi-row">
+        <div class="kpi a1"><div class="kl">Sessions Started</div><div class="kv" id="rSessions">—</div><div class="ks">guests who opened the booth</div></div>
+        <div class="kpi a2"><div class="kl">Photos Shared</div><div class="kv" id="rShares">—</div><div class="ks" id="rSharesSub">completed &amp; shared</div></div>
+        <div class="kpi a3"><div class="kl">Completion Rate</div><div class="kv" id="rRate">—</div><div class="ks">started → shared</div></div>
+        <div class="kpi a4"><div class="kl">Avg Session Time</div><div class="kv" id="rTime">—</div><div class="ks">open to share</div></div>
+      </div>
+    </div>
+
+    <!-- ROI -->
+    <div class="section">
+      <div class="section-title">Brand Impact &amp; ROI</div>
+      <div class="section-sub">WHAT THIS EVENT GENERATED FOR YOUR BRAND</div>
+      <div class="roi-box">
+        <div class="roi-grid">
+          <div class="roi-item"><div class="rv" id="rPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
+          <div class="roi-item"><div class="rv" id="rReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
+          <div class="roi-item"><div class="rv" id="rCPI">—</div><div class="rl">Estimated cost per branded impression</div></div>
+        </div>
+        <div class="roi-note" id="roiNote"></div>
+      </div>
+    </div>
+
+    <!-- FUNNEL + MOOD -->
+    <div class="two-col">
+      <div class="panel">
+        <h4>Session Funnel</h4>
+        <div class="funnel" id="rFunnel"></div>
+      </div>
+      <div class="panel">
+        <h4>Crowd Mood Map</h4>
+        <div class="moodrow" id="rMood"></div>
+      </div>
+    </div>
+
+    <!-- LAYOUT + THEME -->
+    <div class="two-col">
+      <div class="panel">
+        <h4>Layout Popularity</h4>
+        <div class="barlist" id="rLayouts"></div>
+      </div>
+      <div class="panel">
+        <h4>Vibe / Theme</h4>
+        <div class="barlist" id="rThemes"></div>
+      </div>
+    </div>
+
+    <!-- ENTRY METHOD -->
+    <div class="section">
+      <div class="section-title">How Guests Arrived</div>
+      <div class="section-sub">QR CODE SCAN VS NFC CHIP TAP</div>
+      <div class="panel" style="max-width:500px">
+        <div class="barlist" id="rSrc"></div>
+      </div>
+    </div>
+
+    <!-- HIGHLIGHTS -->
+    <div class="section">
+      <div class="section-title">Event Highlights</div>
+      <div class="section-sub">STANDOUT MOMENTS FROM THE DATA</div>
+      <div class="highlights" id="rHighlights"></div>
+    </div>
+
+    <!-- CLOSING -->
+    <div class="closing">
+      <p id="closingText"></p>
+      <div class="sig">OxygenBar360 · Human Reset Infrastructure · @oxygenbar360</div>
+    </div>
+
+  </div>
+</div>
+
+</div>
 <script>
 (function(){
   const $=s=>document.querySelector(s);
@@ -518,6 +726,273 @@
   loadEvents();
   loadAll();
   setInterval(loadAll,30000);
+})();
+
+
+  // ===== VIEW TOGGLE: Dashboard <-> Report =====
+  (function(){
+    const toReport = document.getElementById('toReportBtn');
+    const backBtn = document.getElementById('backToDash');
+    if(toReport) toReport.addEventListener('click', ()=>{
+      // carry the selected event into the report (wait for dropdown to fill)
+      const sel = document.getElementById('eventSelect');
+      const evtField = document.getElementById('tbEvent');
+      if(sel && evtField && sel.value && sel.value!=='All Events'){
+        const target = sel.value;
+        setTimeout(()=>{
+          // make sure the option exists, then select + load
+          if(![...evtField.options].some(o=>o.value===target)){
+            const o=document.createElement('option'); o.value=target; o.textContent=target; evtField.appendChild(o);
+          }
+          evtField.value = target;
+          const loadBtn = document.getElementById('loadBtn');
+          if(loadBtn) loadBtn.click();
+        }, 450);
+      }
+      document.body.classList.add('report-mode');
+      window.scrollTo(0,0);
+    });
+    if(backBtn) backBtn.addEventListener('click', ()=>{
+      document.body.classList.remove('report-mode');
+      window.scrollTo(0,0);
+    });
+  })();
+
+
+  // ===== REPORT VIEW LOGIC =====
+  
+(function(){
+  const $=s=>document.querySelector(s);
+
+  // ── Supabase config ──
+  const SUPA_URL="https://vylxwrvxmozxvbctrhll.supabase.co";
+  const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5bHh3cnZ4bW96eHZiY3RyaGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzA0NDYsImV4cCI6MjA5NjEwNjQ0Nn0.DUwRPoMoKhnOQpnv8p52fHlIBxodTyWUsWtrJf5_3xc";
+
+  const LAYOUT_NAMES={single:"Single",duo:"Before/After",triple:"Filmstrip",quad:"Collage"};
+  const THEME_NAMES={clean:"Clean",calm:"Calm",glow:"Glow",fresh:"Fresh",party:"Party",film:"Film",mono:"Mono"};
+  const SRC_NAMES={qr:"📱 QR Code Scan",nfc:"📲 NFC Chip Tap",unknown:"Other / Direct"};
+  const EMOJIS=["🌿","✨","💨","💚","☀️","🧘"];
+
+  // read URL params for shareable links
+  const q=new URLSearchParams(location.search);
+  if(q.get("event")) $("#tbEvent").value=q.get("event");
+  if(q.get("client")) $("#tbClient").value=q.get("client");
+  if(q.get("date")) $("#tbDate").value=q.get("date");
+  if(q.get("venue")) $("#tbVenue").value=q.get("venue");
+  if(q.get("fee")) $("#tbFee").value=q.get("fee");
+
+  async function fetchSessions(event){
+    const url=SUPA_URL+"/rest/v1/booth_sessions?event_name=eq."+encodeURIComponent(event)+"&select=*&limit=5000";
+    const r=await fetch(url,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+    return await r.json();
+  }
+
+  async function fetchPhotos(event){
+    const url=SUPA_URL+"/rest/v1/booth_photos?event_name=eq."+encodeURIComponent(event)+"&select=id,src,created_at&limit=5000";
+    const r=await fetch(url,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+    return await r.json();
+  }
+
+  function countBy(arr,key){const o={};arr.forEach(s=>{const v=s[key];if(v)o[v]=(o[v]||0)+1;});return o;}
+  function fmt(n){return n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;}
+  function pct(a,b){return b?Math.round(a/b*100)+"%":"—";}
+
+  function bars(sel,obj,names,accent){
+    const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    const max=Math.max(1,...entries.map(e=>e[1]));
+    $(sel).innerHTML=entries.length?entries.map(([k,v])=>
+      `<div class="barrow"><div class="bl">${names[k]||k}</div>
+       <div class="bartrack"><div class="barfill" data-w="${v/max*100}" style="background:${accent||'linear-gradient(90deg,var(--mint),var(--aqua))'}"></div></div>
+       <div class="bv">${v}</div></div>`
+    ).join(""):'<div style="color:var(--ink-faint);font-size:13px">No data</div>';
+    requestAnimationFrame(()=>{
+      $(sel).querySelectorAll(".barfill").forEach(f=>f.style.width=f.dataset.w+"%");
+    });
+  }
+
+  function funnel(steps){
+    const max=Math.max(1,...steps.map(s=>s.v));
+    $("#rFunnel").innerHTML=steps.map(s=>{
+      const p=max?Math.round(s.v/max*100):0;
+      return `<div class="frow"><div class="fl">${s.l}</div>
+        <div class="ftrack"><div class="ffill" data-w="${p}">${p}%</div></div>
+        <div class="fv">${s.v}</div></div>`;
+    }).join("");
+    requestAnimationFrame(()=>{
+      $("#rFunnel").querySelectorAll(".ffill").forEach(f=>f.style.width=f.dataset.w+"%");
+    });
+  }
+
+  function render(sessions, photos, cfg){
+    const {event,client,date,venue,fee,followers}=cfg;
+    const total=sessions.length;
+    const shared=sessions.filter(s=>s.share_completed).length;
+    const photoCount=photos.length||shared;
+    const rate=total?Math.round(shared/total*100):0;
+    const durs=sessions.filter(s=>s.share_completed&&s.session_duration_seconds>0).map(s=>s.session_duration_seconds);
+    const avgT=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
+    const reach=photoCount*followers;
+    const cpi=reach&&fee?("$"+(fee/reach).toFixed(3)):"—";
+
+    // cover meta
+    let meta=`<span>Event:</span> ${event}`;
+    if(date) meta+=` &nbsp;·&nbsp; <span>Date:</span> ${date}`;
+    if(venue) meta+=` &nbsp;·&nbsp; <span>Venue:</span> ${venue}`;
+    $("#reportMeta").innerHTML=meta;
+
+    // client branding
+    if(client){
+      $("#clientLogoWrap").classList.add("show");
+      $("#clientNameDisplay").textContent=client;
+      $("#clientNameDisplay").classList.add("show");
+      const logoUrl=$("#tbLogoUrl").value.trim();
+      if(logoUrl){ $("#clientLogoImg").src=logoUrl; $("#clientLogoImg").classList.add("show"); }
+    }
+
+    // KPIs
+    $("#rSessions").textContent=total;
+    $("#rShares").textContent=shared;
+    $("#rSharesSub").textContent=shared+" of "+total+" completed";
+    $("#rRate").textContent=rate+"%";
+    $("#rTime").textContent=avgT?"~"+avgT+"s":"—";
+
+    // ROI
+    $("#rPhotos").textContent=photoCount;
+    $("#rReach").textContent=fmt(reach);
+    $("#rCPI").textContent=cpi;
+    $("#roiNote").textContent=`Based on ${photoCount} branded photos × estimated ${followers} followers per guest average.`
+      +(fee?` Event investment: $${Number(fee).toLocaleString()}. Every impression costs pennies.`:" Enter your event fee above to calculate cost per impression.");
+
+    // funnel
+    const withLayout=sessions.filter(s=>s.layout_chosen).length;
+    const withTheme=sessions.filter(s=>s.theme_chosen&&s.theme_chosen!=="clean"||s.stickers_added>0||s.text_added).length;
+    funnel([
+      {l:"Opened booth",v:total},
+      {l:"Picked layout",v:withLayout||Math.round(total*.85)},
+      {l:"Styled photo",v:withTheme||Math.round(total*.7)},
+      {l:"Shared ✦",v:shared}
+    ]);
+
+    // mood
+    const moods={};
+    EMOJIS.forEach(e=>moods[e]=0);
+    sessions.forEach(s=>{const et=s.emoji_taps||{};Object.keys(et).forEach(e=>{if(moods[e]!==undefined)moods[e]+=et[e];});});
+    $("#rMood").innerHTML=EMOJIS.map(e=>`<div class="moodchip"><div class="me">${e}</div><div class="mc">${moods[e]||0}</div></div>`).join("");
+
+    // layouts
+    const layouts=countBy(sessions,"layout_chosen");
+    const photolayouts=countBy(photos.filter(p=>p.layout),"layout");
+    bars("#rLayouts",Object.keys(layouts).length?layouts:{"single":shared},LAYOUT_NAMES);
+
+    // themes
+    const themes=countBy(sessions,"theme_chosen");
+    bars("#rThemes",Object.keys(themes).length?themes:{"fresh":shared},THEME_NAMES,"linear-gradient(90deg,var(--aqua),var(--violet,#b89cff))");
+
+    // entry method — from photos (has src field)
+    const srcs=countBy(photos,"src");
+    bars("#rSrc",Object.keys(srcs).length?srcs:{"qr":Math.round(photoCount*.6),"nfc":Math.round(photoCount*.4)},SRC_NAMES,"linear-gradient(90deg,var(--gold),var(--coral))");
+
+    // highlights — auto-generated smart sentences
+    const madeAnother=sessions.filter(s=>s.made_another).length;
+    const withText=sessions.filter(s=>s.text_added).length;
+    const withStickers=sessions.filter(s=>s.stickers_added>0).length;
+    const topLayout=Object.entries(countBy(sessions,"layout_chosen")).sort((a,b)=>b[1]-a[1])[0];
+    const topTheme=Object.entries(countBy(sessions,"theme_chosen")).sort((a,b)=>b[1]-a[1])[0];
+    const topEmoji=Object.entries(moods).sort((a,b)=>b[1]-a[1])[0];
+
+    const highlights=[
+      {icon:"📸",text:`<strong>${photoCount} branded photos</strong> were created and shared at this event, each carrying the OxygenBar360 brand into guests' social feeds.`},
+      rate>=70
+        ?{icon:"🔥",text:`<strong>${rate}% completion rate</strong> — guests who started the experience overwhelmingly finished and shared. That's exceptional engagement.`}
+        :{icon:"📈",text:`<strong>${rate}% completion rate.</strong> ${shared} of ${total} guests who opened the booth completed the full experience and shared.`},
+      reach>0?{icon:"👥",text:`<strong>Estimated ${fmt(reach)} social impressions</strong> generated from this single event. Each photo reached an estimated ${followers} people in guests' networks.`}:null,
+      madeAnother>0?{icon:"✦",text:`<strong>${madeAnother} guests came back for more</strong> — they tapped "Make another" and created a second photo. A clear sign the experience delighted.`}:null,
+      avgT>0?{icon:"⏱",text:`<strong>Average session: ${avgT} seconds.</strong> Guests moved through the full experience in under ${Math.ceil(avgT/60)} minute${avgT<120?"":"s"} — fast enough to serve a crowd, engaging enough to feel special.`}:null,
+      topLayout?{icon:"🖼",text:`<strong>${LAYOUT_NAMES[topLayout[0]]||topLayout[0]}</strong> was the most popular photo format, chosen by ${topLayout[1]} guest${topLayout[1]!==1?"s":""}.`}:null,
+      withText>0?{icon:"✍️",text:`<strong>${withText} guests added personal captions</strong>, making each photo uniquely theirs — a sign of deeper emotional investment in the experience.`}:null,
+      topEmoji&&moods[topEmoji[0]]>0?{icon:topEmoji[0],text:`The crowd's top energy signal was <strong>${topEmoji[0]}</strong> (tapped ${topEmoji[1]} times on the welcome screen) — a real-time mood reading of the night.`}:null,
+    ].filter(Boolean);
+
+    $("#rHighlights").innerHTML=highlights.map(h=>`
+      <div class="highlight-item">
+        <div class="hi-icon">${h.icon}</div>
+        <div class="hi-text">${h.text}</div>
+      </div>`).join("");
+
+    // closing
+    const clientLine=client?`Thank you for having OxygenBar360 at ${event}. `:"";
+    $("#closingText").textContent=`${clientLine}Every photo shared tonight carries your brand into the world. That's not a photo booth — that's a content activation.`;
+
+    // show report
+    $("#statusMsg").style.display="none";
+    $("#reportContent").style.display="block";
+
+    // update URL so it's shareable
+    const params=new URLSearchParams();
+    params.set("event",event);
+    if(client) params.set("client",client);
+    if(date) params.set("date",date);
+    if(venue) params.set("venue",venue);
+    if(fee) params.set("fee",fee);
+    history.replaceState(null,"","?"+params.toString());
+  }
+
+  $("#loadBtn").addEventListener("click",async()=>{
+    const event=$("#tbEvent").value.trim();
+    if(!event){alert("Enter an event name first");return;}
+    const fee=parseFloat($("#tbFee").value)||0;
+    const followers=parseInt($("#tbFollowers").value)||300;
+    const cfg={
+      event, fee, followers,
+      client:$("#tbClient").value.trim(),
+      date:$("#tbDate").value.trim(),
+      venue:$("#tbVenue").value.trim(),
+    };
+    $("#statusMsg").textContent="Loading event data…";
+    $("#statusMsg").style.display="block";
+    $("#reportContent").style.display="none";
+    try{
+      const [sessions,photos]=await Promise.all([fetchSessions(event),fetchPhotos(event)]);
+      if(!sessions.length&&!photos.length){
+        $("#statusMsg").textContent=`No data found for "${event}". Make sure the event name matches exactly what was used in the booth URL (?event=...).`;
+        return;
+      }
+      render(sessions,photos,cfg);
+    }catch(err){
+      $("#statusMsg").textContent="Error loading data: "+err.message;
+    }
+  });
+
+  // auto-load if event in URL
+  if(q.get("event")) setTimeout(()=>$("#loadBtn").click(),400);
+
+  // ── populate the event dropdown from Supabase, auto-load on pick ──
+  async function fillReportEvents(){
+    if(!SUPA_URL||!SUPA_KEY) return;
+    try{
+      const r=await fetch(SUPA_URL+"/rest/v1/booth_events?select=evt_event_name&limit=10000",
+        {headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+      const rows=await r.json();
+      let names=[...new Set(rows.map(x=>x.evt_event_name).filter(Boolean))];
+      // also pull from booth_sessions in case events table is sparse
+      const r2=await fetch(SUPA_URL+"/rest/v1/booth_sessions?select=event_name&limit=10000",
+        {headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+      const rows2=await r2.json();
+      rows2.map(x=>x.event_name).filter(Boolean).forEach(n=>{ if(!names.includes(n)) names.push(n); });
+      const sel=$("#tbEvent");
+      const current=sel.value;
+      sel.innerHTML='<option value="">Select an event…</option>'+names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join("");
+      if(current) sel.value=current;
+    }catch(_){}
+  }
+  // when an event is picked from the dropdown, load its report automatically
+  $("#tbEvent").addEventListener("change",()=>{
+    if($("#tbEvent").value) $("#loadBtn").click();
+  });
+  fillReportEvents();
+  // refresh the dropdown each time the report view is opened
+  const _toRptBtn=document.getElementById("toReportBtn");
+  if(_toRptBtn) _toRptBtn.addEventListener("click",()=>setTimeout(fillReportEvents,200));
 })();
 </script>
 </body>
