@@ -1017,16 +1017,18 @@
     body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:30px">Loading…</td></tr>';
 
     let events=[], sessions=[];
+    let fetchedFromSupabase=false;
     if(SUPA_READY){
       try{
         [events,sessions]=await Promise.all([
           sb("booth_events?select=*&limit=20000"),
           sb("booth_sessions?select=*&limit=20000")
         ]);
+        fetchedFromSupabase=true;  // we reached Supabase — don't fall to demo
       }catch(_){}
     }
-    // demo fallback if nothing
-    if(!events.length){
+    // demo fallback ONLY if not connected to Supabase at all
+    if(!fetchedFromSupabase && !events.length){
       // synthesize a couple of past events for preview
       const demoNames=["Summer Rooftop Mixer","Acme Holiday Gala","Wellness Expo"];
       events=[]; sessions=[];
