@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OxygenBar360 — Analytics Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#06141b;--bg2:#0a2330;--panel:#0c2733;--ink:#eaf6f4;--ink-soft:#bcdcd8;--ink-faint:#7fa39f;
+    --mint:#7df0d0;--aqua:#46c7e8;--gold:#f4d58d;--coral:#ff7d6b;--violet:#b89cff;
+    --stroke:rgba(125,240,208,.16);--stroke-2:rgba(125,240,208,.32);--glass:rgba(255,255,255,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:var(--bg);color:var(--ink);font-family:'Outfit',sans-serif;min-height:100vh}
+  .bg{position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(1100px 700px at 12% 6%,rgba(29,125,122,.35),transparent 58%),
+    radial-gradient(900px 700px at 92% 12%,rgba(22,98,127,.32),transparent 60%),
+    linear-gradient(180deg,var(--bg2),var(--bg));}
+  .grain{position:fixed;inset:0;z-index:-1;opacity:.4;pointer-events:none;
+    background-image:radial-gradient(rgba(125,240,208,.05) 1px,transparent 1px);background-size:24px 24px}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:36px 28px 64px}
+
+  /* header */
+  header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:'Fraunces',serif;font-weight:600;font-size:26px}
+  .brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--mint),var(--aqua));box-shadow:0 0 16px var(--mint)}
+  .subtitle{font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--mint);font-weight:600;margin-top:6px}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .controls select,.controls button{background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);
+    font-family:inherit;font-size:14px;border-radius:11px;padding:10px 14px;cursor:pointer}
+  .controls button.primary{background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b;font-weight:600;border:none}
+  .controls .live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-faint)}
+  .live .ld{width:8px;height:8px;border-radius:50%;background:#ff5f5f;animation:blink 1.4s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--stroke-2),transparent);margin:24px 0 28px}
+
+  /* hero KPI row */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+  .kpi{background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.4));border:1px solid var(--stroke);
+    border-radius:18px;padding:22px;position:relative;overflow:hidden}
+  .kpi:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--mint))}
+  .kpi .label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+  .kpi .value{font-family:'Fraunces',serif;font-weight:700;font-size:42px;line-height:1;margin-top:12px;color:var(--accent,var(--mint))}
+  .kpi .sub{font-size:13px;color:var(--ink-soft);margin-top:8px}
+  .kpi.a1{--accent:var(--mint)} .kpi.a2{--accent:var(--aqua)} .kpi.a3{--accent:var(--gold)} .kpi.a4{--accent:var(--violet)}
+
+  /* panels grid */
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+  .panel{background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.3));border:1px solid var(--stroke);
+    border-radius:18px;padding:22px}
+  .panel.wide{grid-column:1 / -1}
+  .panel h3{font-family:'Fraunces',serif;font-weight:600;font-size:18px;margin-bottom:4px}
+  .panel .ph-sub{font-size:12px;color:var(--ink-faint);margin-bottom:18px}
+
+  /* horizontal bar chart */
+  .barlist{display:flex;flex-direction:column;gap:13px}
+  .barrow{display:grid;grid-template-columns:120px 1fr 44px;align-items:center;gap:12px}
+  .barrow .bl{font-size:13px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bartrack{height:14px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden}
+  .barfill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--aqua));
+    width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}
+  .barrow .bv{font-size:13px;color:var(--ink);font-weight:600;text-align:right}
+
+  /* emoji mood map */
+  .moodmap{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .mood{text-align:center;background:var(--glass);border:1px solid var(--stroke);border-radius:14px;padding:14px 6px}
+  .mood .em{font-size:30px}
+  .mood .ct{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--mint);margin-top:6px}
+  .mood .nm{font-size:10px;color:var(--ink-faint);margin-top:2px;letter-spacing:.04em}
+
+  /* funnel */
+  .funnel{display:flex;flex-direction:column;gap:10px}
+  .fstep{display:grid;grid-template-columns:140px 1fr 80px;align-items:center;gap:12px}
+  .fstep .fl{font-size:13px;color:var(--ink-soft)}
+  .ftrack{height:30px;background:rgba(255,255,255,.04);border-radius:8px;overflow:hidden;position:relative}
+  .ffill{height:100%;background:linear-gradient(90deg,var(--aqua),var(--mint));border-radius:8px;width:0;
+    transition:width 1.1s cubic-bezier(.22,1,.36,1);display:flex;align-items:center;padding-left:12px;
+    font-size:12px;font-weight:600;color:#04221b}
+  .fstep .fv{font-size:14px;font-weight:700;text-align:right;color:var(--ink)}
+
+  /* ROI callout */
+  .roi-panel{background:linear-gradient(135deg,rgba(125,240,208,.12),rgba(70,199,232,.08));
+    border:1px solid var(--stroke-2)}
+  .roi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:6px}
+  .roi-item .rv{font-family:'Fraunces',serif;font-weight:700;font-size:34px;color:var(--gold)}
+  .roi-item .rl{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.4}
+  .roi-note{font-size:12px;color:var(--ink-faint);margin-top:18px;line-height:1.6;font-style:italic}
+  .roi-input{display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .roi-input label{font-size:13px;color:var(--ink-soft)}
+  .roi-input input{background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);
+    font-family:inherit;font-size:14px;border-radius:9px;padding:8px 12px;width:110px}
+
+  /* empty/connect state */
+  .connect-banner{background:linear-gradient(135deg,rgba(244,213,141,.12),rgba(255,125,107,.08));
+    border:1px solid rgba(244,213,141,.3);border-radius:16px;padding:18px 22px;margin-bottom:24px;
+    font-size:14px;color:var(--ink-soft);line-height:1.6;display:none}
+  .connect-banner.show{display:block}
+  .connect-banner b{color:var(--gold)}
+  .demo-tag{display:inline-block;background:var(--gold);color:#3a2a08;font-size:11px;font-weight:700;
+    padding:3px 10px;border-radius:99px;letter-spacing:.05em;margin-left:10px;vertical-align:middle}
+
+  .footnote{text-align:center;color:var(--ink-faint);font-size:12px;margin-top:40px;line-height:1.6}
+
+  @media(max-width:900px){
+    .kpi-row{grid-template-columns:1fr 1fr}
+    .panels{grid-template-columns:1fr}
+    .roi-grid{grid-template-columns:1fr}
+    .moodmap{grid-template-columns:repeat(3,1fr)}
+    .barrow{grid-template-columns:90px 1fr 40px}
+    .fstep{grid-template-columns:100px 1fr 60px}
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="grain"></div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand"><span class="dot"></span>OxygenBar360<span class="demo-tag" id="demoTag" style="display:none">DEMO DATA</span></div>
+      <div class="subtitle">Analytics &amp; ROI Dashboard</div>
+    </div>
+    <div class="controls">
+      <select id="eventSelect"><option>All Events</option></select>
+      <button id="refreshBtn">↻ Refresh</button>
+      <span class="live"><span class="ld"></span>auto-refresh 30s</span>
+    </div>
+  </header>
+
+  <div class="connect-banner" id="connectBanner">
+    <b>Showing demo data.</b> To see your real numbers, paste your Supabase keys into <b>ob360-dashboard.html</b> (same keys as the photo booth) and make sure the <b>booth_sessions</b> table exists. Until then, this shows sample data so you can see what the dashboard looks like in action.
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- HERO KPIs -->
+  <div class="kpi-row">
+    <div class="kpi a1"><div class="label">Sessions Started</div><div class="value" id="kSessions">—</div><div class="sub" id="kSessionsSub">guests who opened the booth</div></div>
+    <div class="kpi a2"><div class="label">Photos Shared</div><div class="value" id="kShares">—</div><div class="sub" id="kSharesSub">completed &amp; shared</div></div>
+    <div class="kpi a3"><div class="label">Completion Rate</div><div class="value" id="kRate">—</div><div class="sub">started → shared</div></div>
+    <div class="kpi a4"><div class="label">Avg Time / Session</div><div class="value" id="kTime">—</div><div class="sub">from open to share</div></div>
+  </div>
+
+  <!-- ROI -->
+  <div class="panel roi-panel wide">
+    <h3>Brand Reach &amp; ROI ✦</h3>
+    <div class="ph-sub">The numbers you put in front of the next event organizer</div>
+    <div class="roi-grid">
+      <div class="roi-item"><div class="rv" id="rPhotos">—</div><div class="rl">Branded photos created — each one carries @oxygenbar360 + #oxygenbar360</div></div>
+      <div class="roi-item"><div class="rv" id="rReach">—</div><div class="rl">Estimated social impressions (shares × avg followers)</div></div>
+      <div class="roi-item"><div class="rv" id="rCPI">—</div><div class="rl">Est. cost per impression (event fee ÷ reach)</div></div>
+    </div>
+    <div class="roi-input">
+      <label>Avg followers per guest:</label>
+      <input type="number" id="followerInput" value="300">
+      <label>Event fee ($):</label>
+      <input type="number" id="feeInput" value="1500">
+      <button class="primary" id="recalcBtn" style="padding:8px 16px">Recalculate</button>
+    </div>
+    <div class="roi-note">Conservative defaults: 300 followers/guest, adjust to your crowd. Reach is an industry-standard estimate (shares × audience). Pull exact hashtag reach from Instagram → #oxygenbar360 analytics after the event.</div>
+  </div>
+
+  <!-- PANELS -->
+  <div class="panels">
+    <div class="panel">
+      <h3>Session Funnel</h3>
+      <div class="ph-sub">Where guests flow — and where they drop</div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Crowd Mood Map</h3>
+      <div class="ph-sub">Which welcome emojis guests tapped — real-time sentiment</div>
+      <div class="moodmap" id="moodmap"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Layout Popularity</h3>
+      <div class="ph-sub">Which photo formats guests choose</div>
+      <div class="barlist" id="layoutBars"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Vibe / Theme Popularity</h3>
+      <div class="ph-sub">The mood of the photos created</div>
+      <div class="barlist" id="themeBars"></div>
+    </div>
+
+    <div class="panel">
+      <h3>How Guests Arrived</h3>
+      <div class="ph-sub">QR code scan vs NFC chip tap — which draws people in</div>
+      <div class="barlist" id="srcBars"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Engagement Signals</h3>
+      <div class="ph-sub">Depth of interaction beyond just snapping</div>
+      <div class="barlist" id="engageBars"></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    OxygenBar360 · data updates as guests use the booth · keep this dashboard open during events to watch it live ✦
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const q=new URLSearchParams(location.search);
+
+  // ===== Supabase config — same keys as the photo booth =====
+  const SUPA_URL = "https://vylxwrvxmozxvbctrhll.supabase.co";   // e.g. "https://abcdef.supabase.co"
+  const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5bHh3cnZ4bW96eHZiY3RyaGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzA0NDYsImV4cCI6MjA5NjEwNjQ0Nn0.DUwRPoMoKhnOQpnv8p52fHlIBxodTyWUsWtrJf5_3xc";   // your anon public key
+  const SUPA_READY = SUPA_URL && SUPA_KEY;
+  // ==========================================================
+
+  const EMOJI_NAMES={"🌿":"Grow","✨":"Shine","💨":"Breathe","💚":"Care","☀️":"Sunshine","🧘":"Calm"};
+  const LAYOUT_NAMES={single:"Single",duo:"Before/After",triple:"Filmstrip",quad:"Collage"};
+  const THEME_NAMES={clean:"Clean",calm:"Calm",glow:"Glow",fresh:"Fresh",party:"Party",film:"Film",mono:"Mono"};
+  const SRC_NAMES={qr:"📱 QR Code",nfc:"📲 NFC Chip Tap",unknown:"Other / Direct"};
+
+  let followers=300, fee=1500;
+
+  // ---------- DEMO DATA (shown when Supabase not connected) ----------
+  function demoData(){
+    const sessions=[];
+    const layouts=["single","single","single","duo","duo","triple","quad","single","duo","quad"];
+    const themes=["fresh","calm","glow","party","fresh","clean","glow","fresh","party","calm"];
+    const emojiPool=["🌿","✨","💨","💚","☀️","🧘"];
+    for(let i=0;i<47;i++){
+      const shared = i < 38;  // 38 of 47 completed
+      const et={};
+      const taps=Math.floor(Math.random()*4);
+      for(let t=0;t<taps;t++){const e=emojiPool[Math.floor(Math.random()*emojiPool.length)];et[e]=(et[e]||0)+1;}
+      sessions.push({
+        share_completed:shared,
+        layout_chosen:layouts[i%layouts.length],
+        theme_chosen:themes[i%themes.length],
+        stickers_added:Math.floor(Math.random()*5),
+        text_added:Math.random()>0.5,
+        made_another:Math.random()>0.78,
+        session_duration_seconds: shared? 45+Math.floor(Math.random()*70):20+Math.floor(Math.random()*25),
+        emoji_taps:et,
+        src: Math.random()>0.42 ? "nfc" : (Math.random()>0.15 ? "qr" : "unknown")
+      });
+    }
+    return sessions;
+  }
+
+  // ---------- fetch real sessions ----------
+  async function fetchSessions(){
+    if(!SUPA_READY){ $("#connectBanner").classList.add("show"); $("#demoTag").style.display="inline-block"; return demoData(); }
+    try{
+      let url=SUPA_URL.replace(/\/$/,"")+"/rest/v1/booth_sessions?select=*&limit=5000";
+      const ev=$("#eventSelect").value;
+      if(ev && ev!=="All Events") url+="&event_name=eq."+encodeURIComponent(ev);
+      const res=await fetch(url,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const rows=await res.json();
+      if(!rows.length){ $("#connectBanner").classList.add("show"); $("#demoTag").style.display="inline-block"; return demoData(); }
+      $("#connectBanner").classList.remove("show"); $("#demoTag").style.display="none";
+      return rows;
+    }catch(e){
+      $("#connectBanner").classList.add("show"); $("#demoTag").style.display="inline-block";
+      return demoData();
+    }
+  }
+
+  // ---------- render everything ----------
+  function render(sessions){
+    const total=sessions.length;
+    const shared=sessions.filter(s=>s.share_completed).length;
+    const rate= total? Math.round(shared/total*100):0;
+    const durs=sessions.filter(s=>s.share_completed && s.session_duration_seconds>0).map(s=>s.session_duration_seconds);
+    const avgT= durs.length? Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
+
+    animateNum("#kSessions",total);
+    animateNum("#kShares",shared);
+    $("#kRate").textContent=rate+"%";
+    $("#kTime").textContent=avgT+"s";
+    $("#kSessionsSub").textContent="guests who opened the booth";
+    $("#kSharesSub").textContent=shared+" of "+total+" finished";
+
+    // ROI
+    const reach=shared*followers;
+    animateNum("#rPhotos",shared);
+    $("#rReach").textContent=fmt(reach);
+    $("#rCPI").textContent= reach? "$"+(fee/reach).toFixed(3):"—";
+
+    // funnel
+    const filledPhoto=sessions.filter(s=>s.layout_chosen).length;
+    const styled=sessions.filter(s=>s.theme_chosen||s.stickers_added>0||s.text_added).length;
+    funnel([
+      {l:"Opened booth",v:total},
+      {l:"Picked layout",v:filledPhoto},
+      {l:"Styled photo",v:styled},
+      {l:"Shared ✦",v:shared}
+    ]);
+
+    // mood map
+    const moods={};
+    ["🌿","✨","💨","💚","☀️","🧘"].forEach(e=>moods[e]=0);
+    sessions.forEach(s=>{ const et=s.emoji_taps||{}; Object.keys(et).forEach(e=>{ if(moods[e]!==undefined) moods[e]+=et[e]; }); });
+    moodmap(moods);
+
+    // layout bars
+    bars("#layoutBars", countBy(sessions,"layout_chosen"), LAYOUT_NAMES);
+    // theme bars
+    bars("#themeBars", countBy(sessions,"theme_chosen"), THEME_NAMES);
+
+    // engagement
+    const withStickers=sessions.filter(s=>s.stickers_added>0).length;
+    const withText=sessions.filter(s=>s.text_added).length;
+    const madeAnother=sessions.filter(s=>s.made_another).length;
+    barsRaw("#engageBars",[
+      {l:"Added stickers",v:withStickers,max:total},
+      {l:"Added custom text",v:withText,max:total},
+      {l:"Made another ✦",v:madeAnother,max:total}
+    ]);
+
+    // entry method (QR vs NFC) — reads the src field
+    bars("#srcBars", countBy(sessions,"src"), SRC_NAMES);
+  }
+
+  function countBy(arr,key){ const o={}; arr.forEach(s=>{const v=s[key];if(v)o[v]=(o[v]||0)+1;}); return o; }
+
+  function bars(sel,obj,names){
+    const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+    const max=Math.max(1,...entries.map(e=>e[1]));
+    $(sel).innerHTML=entries.map(([k,v])=>
+      '<div class="barrow"><div class="bl">'+(names[k]||k)+'</div>'+
+      '<div class="bartrack"><div class="barfill" data-w="'+(v/max*100)+'"></div></div>'+
+      '<div class="bv">'+v+'</div></div>'
+    ).join("")||'<div class="ph-sub">No data yet</div>';
+    animateBars(sel);
+  }
+  function barsRaw(sel,rows){
+    $(sel).innerHTML=rows.map(r=>
+      '<div class="barrow"><div class="bl">'+r.l+'</div>'+
+      '<div class="bartrack"><div class="barfill" data-w="'+(r.max?r.v/r.max*100:0)+'"></div></div>'+
+      '<div class="bv">'+r.v+'</div></div>'
+    ).join("");
+    animateBars(sel);
+  }
+  function animateBars(sel){
+    requestAnimationFrame(()=>{
+      $(sel).querySelectorAll(".barfill").forEach(f=>{ f.style.width=f.dataset.w+"%"; });
+    });
+  }
+
+  function funnel(steps){
+    const max=Math.max(1,...steps.map(s=>s.v));
+    $("#funnel").innerHTML=steps.map(s=>{
+      const pct= max? Math.round(s.v/max*100):0;
+      return '<div class="fstep"><div class="fl">'+s.l+'</div>'+
+        '<div class="ftrack"><div class="ffill" data-w="'+pct+'">'+pct+'%</div></div>'+
+        '<div class="fv">'+s.v+'</div></div>';
+    }).join("");
+    requestAnimationFrame(()=>{ $("#funnel").querySelectorAll(".ffill").forEach(f=>f.style.width=f.dataset.w+"%"); });
+  }
+
+  function moodmap(moods){
+    $("#moodmap").innerHTML=Object.entries(moods).map(([e,c])=>
+      '<div class="mood"><div class="em">'+e+'</div><div class="ct">'+c+'</div><div class="nm">'+(EMOJI_NAMES[e]||"")+'</div></div>'
+    ).join("");
+  }
+
+  function animateNum(sel,target){
+    const el=$(sel); const start=0; let t0=null;
+    function step(ts){ if(!t0)t0=ts; const p=Math.min(1,(ts-t0)/700); el.textContent=Math.round(start+(target-start)*p); if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  }
+  function fmt(n){ return n>=1000? (n/1000).toFixed(1).replace(/\.0$/,"")+"K" : ""+n; }
+
+  // populate event dropdown from real data
+  async function loadEvents(){
+    if(!SUPA_READY) return;
+    try{
+      const res=await fetch(SUPA_URL.replace(/\/$/,"")+"/rest/v1/booth_sessions?select=event_name",{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+      const rows=await res.json();
+      const names=[...new Set(rows.map(r=>r.event_name).filter(Boolean))];
+      const sel=$("#eventSelect");
+      names.forEach(n=>{ const o=document.createElement("option"); o.textContent=n; sel.appendChild(o); });
+    }catch(_){}
+  }
+
+  async function refresh(){ const s=await fetchSessions(); render(s); }
+
+  $("#refreshBtn").addEventListener("click",refresh);
+  $("#eventSelect").addEventListener("change",refresh);
+  $("#recalcBtn").addEventListener("click",()=>{
+    followers=parseInt($("#followerInput").value,10)||300;
+    fee=parseInt($("#feeInput").value,10)||1500;
+    refresh();
+  });
+
+  loadEvents();
+  refresh();
+  setInterval(refresh,30000);
+})();
+</script>
+</body>
+</html>
