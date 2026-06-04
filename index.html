@@ -1205,13 +1205,8 @@
   document.getElementById("histDelCancel").addEventListener("click", closeHistDelete);
 
   document.getElementById("histDelConfirm").addEventListener("click", async function(){
-    // DIAGNOSTIC — remove after confirm works
-    if(!_histPending){
-      alert("DEBUG: _histPending is null — button wired but no pending action set.");
-      closeHistDelete(); return;
-    }
+    if(!_histPending){ closeHistDelete(); return; }
     const {name, mode} = _histPending;
-    alert("DEBUG: confirm clicked — name='" + name + "' mode='" + mode + "' SUPA_READY=" + SUPA_READY);
 
     if(mode === "hide"){
       try{
@@ -1262,21 +1257,39 @@
         try{ detail = await failed[0].text(); }catch(_){}
         confirmBtn.textContent = origLabel;
         confirmBtn.disabled = false;
-        if(failed[0].status === 401 || failed[0].status === 403 || /security|permission|policy/i.test(detail)){
-          alert("Supabase blocked the delete.\n\nGo to Supabase → SQL Editor and run:\n\ncreate policy \"public delete\" on booth_events for delete using (true);\ncreate policy \"public delete\" on booth_sessions for delete using (true);\ncreate policy \"public delete\" on booth_photos for delete using (true);\ncreate policy \"public delete\" on event_archive for delete using (true);");
+        if(failed[0].status===401||failed[0].status===403||/security|permission|policy/i.test(detail)){
+          alert("Supabase blocked the delete. Go to Supabase → SQL Editor and run the public delete policies for all 4 tables.");
         } else {
-          alert("Delete failed (" + failed[0].status + ").\n" + (detail || "No detail.") + "\n\nEvent was NOT removed.");
+          alert("Delete failed ("+failed[0].status+").\n"+(detail||"No detail.")+"\n\nEvent was NOT removed.");
         }
         return;
       }
 
+      // Immediately hide the event from the list (instant UI feedback)
+      // then reload from DB after a short delay to confirm removal
+      try{
+        const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events")||"[]");
+        if(!hidden.includes(name)) hidden.push(name);
+        localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
+      }catch(_){}
       closeHistDelete();
       loadHistory();
+      // Also reload after 1.5s in case Supabase needs a moment
+      setTimeout(()=>{
+        // clear the temp hide now that DB is clean
+        try{
+          const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events")||"[]");
+          const idx = hidden.indexOf(name);
+          if(idx>-1) hidden.splice(idx,1);
+          localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
+        }catch(_){}
+        loadHistory();
+      }, 1500);
 
     }catch(err){
       confirmBtn.textContent = origLabel;
       confirmBtn.disabled = false;
-      alert("Network error: " + (err && err.message || "unknown") + "\n\nCheck your connection and try again.");
+      alert("Network error: " + (err && err.message || "unknown"));
     }
   });
 
