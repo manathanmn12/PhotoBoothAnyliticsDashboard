@@ -1432,7 +1432,9 @@
     const {event,client,date,venue,fee,followers}=cfg;
     repEvents = repEvents || [];
     const total=sessions.length;
-    const shared=sessions.filter(s=>s.share_completed).length;
+    // shared: prefer booth_sessions with share_completed,
+    // fall back to booth_photos count if sessions aren't tracking correctly
+    const shared=sessions.filter(s=>s.share_completed).length || photos.length;
     const photoCount=photos.length||shared;
     const rate=total?Math.round(shared/total*100):0;
     const durs=sessions.filter(s=>s.share_completed&&s.session_duration_seconds>0).map(s=>s.session_duration_seconds);
@@ -1441,10 +1443,10 @@
     const cpi=reach&&fee?("$"+(fee/reach).toFixed(3)):"—";
 
     // ── NEW ORGANIZER STATS ──
-    // Total scans: prefer Scan events, fall back to Session Started, else sessions count
+    // Total scans: prefer Scan events, fall back to Session Started, else photos count
     let scans = new Set(repEvents.filter(e=>e.event_name==="Scan").map(e=>e.session_id)).size;
     if(!scans) scans = new Set(repEvents.filter(e=>e.event_name==="Session Started").map(e=>e.session_id)).size;
-    if(!scans) scans = total;
+    if(!scans) scans = total || photos.length;
     const conv = scans?Math.round(shared/scans*100):0;
     // Total engagement minutes (sum of all completed session durations)
     const totalSec = durs.reduce((a,b)=>a+b,0);
