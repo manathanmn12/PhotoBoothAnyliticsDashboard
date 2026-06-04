@@ -1183,71 +1183,103 @@
   }
 
   // ── history delete/hide confirmation ──
-  let _histPending=null;
-  function openHistDelete(name,mode){
-    _histPending={name,mode};
-    const isDel=mode==="delete";
-    $("#histDelTitle").textContent=isDel?"Permanently Delete Event?":"Hide Event from History?";
-    $("#histDelText").innerHTML=isDel
-      ? `This <b>permanently erases all data</b> for "<b>${name}</b>" from the database — sessions, events, everything. This cannot be undone, and the client report link will stop working. Are you sure?`
-      : `This hides "<b>${name}</b>" from your history view. The data stays saved and the client report link keeps working — you can unhide it later. Just keeps your list tidy.`;
-    $("#histDelConfirm").textContent=isDel?"Permanently Delete":"Hide It";
-    $("#histDelConfirm").className=isDel?"confirm":"confirm hide-confirm";
-    $("#histDelBg").classList.add("show");
-  }
-  function closeHistDelete(){ $("#histDelBg").classList.remove("show"); _histPending=null; }
+  let _histPending = null;
 
-  // wire modal buttons once
-  document.addEventListener("DOMContentLoaded",()=>{});
-  setTimeout(()=>{
-    const cancel=$("#histDelCancel"), confirm=$("#histDelConfirm");
-    if(cancel) cancel.addEventListener("click",closeHistDelete);
-    if(confirm) confirm.addEventListener("click",async()=>{
-      if(!_histPending) return;
-      const {name,mode}=_histPending;
-      if(mode==="hide"){
-        const hidden=JSON.parse(localStorage.getItem('ob360_hidden_events')||'[]');
+  function openHistDelete(name, mode){
+    _histPending = {name, mode};
+    const isDel = mode === "delete";
+    document.getElementById("histDelTitle").textContent = isDel ? "Permanently Delete Event?" : "Hide Event from History?";
+    document.getElementById("histDelText").innerHTML = isDel
+      ? `This <b>permanently erases all data</b> for "<b>${name}</b>" from the database — sessions, events, everything. This cannot be undone and the client report link will stop working. Are you sure?`
+      : `This hides "<b>${name}</b>" from your history view. The data stays saved and the client report link keeps working — you can unhide it later. Just keeps your list tidy.`;
+    document.getElementById("histDelConfirm").textContent = isDel ? "Permanently Delete" : "Hide It";
+    document.getElementById("histDelBg").classList.add("show");
+  }
+
+  function closeHistDelete(){
+    document.getElementById("histDelBg").classList.remove("show");
+    _histPending = null;
+  }
+
+  // Wire buttons directly — no setTimeout, no timing issues
+  document.getElementById("histDelCancel").addEventListener("click", closeHistDelete);
+
+  document.getElementById("histDelConfirm").addEventListener("click", async function(){
+    // DIAGNOSTIC — remove after confirm works
+    if(!_histPending){
+      alert("DEBUG: _histPending is null — button wired but no pending action set.");
+      closeHistDelete(); return;
+    }
+    const {name, mode} = _histPending;
+    alert("DEBUG: confirm clicked — name='" + name + "' mode='" + mode + "' SUPA_READY=" + SUPA_READY);
+
+    if(mode === "hide"){
+      try{
+        const hidden = JSON.parse(localStorage.getItem("ob360_hidden_events") || "[]");
         if(!hidden.includes(name)) hidden.push(name);
-        localStorage.setItem('ob360_hidden_events',JSON.stringify(hidden));
-        closeHistDelete(); loadHistory();
-      } else {
-        // permanent delete from Supabase — check every response, surface failures
-        if(!SUPA_READY){ alert("Not connected to the database, so there's nothing to delete."); closeHistDelete(); return; }
-        const btn=$("#histDelConfirm");
-        const orig=btn.textContent;
-        btn.textContent="Deleting…"; btn.disabled=true;
-        const enc=encodeURIComponent(name);
-        const tables=["booth_events?evt_event_name=eq.","booth_sessions?event_name=eq.","booth_photos?event_name=eq.","event_archive?event_name=eq."];
-        try{
-          const responses=await Promise.all(tables.map(t=>
-            fetch(SUPA_URL+"/rest/v1/"+t+enc,{
-              method:"DELETE",
-              headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=minimal"}
-            })
-          ));
-          const failed=responses.filter(r=>!r.ok);
-          if(failed.length){
-            // surface the real reason instead of silently "succeeding"
-            let detail="";
-            try{ detail=await failed[0].text(); }catch(_){}
-            const status=failed[0].status;
-            btn.textContent=orig; btn.disabled=false;
-            if(status===401||status===403 || /row-level security|permission|policy/i.test(detail)){
-              alert("Delete was blocked by the database's security rules.\n\nFix: in Supabase → SQL Editor, run the \"public delete\" policy for these tables (booth_events, booth_sessions, booth_photos, event_archive), then try again.");
-            } else {
-              alert("Delete failed (status "+status+").\n"+(detail?detail.slice(0,200):"No detail returned.")+"\n\nThe event was NOT removed.");
-            }
-            return; // leave modal open so they can retry
+        localStorage.setItem("ob360_hidden_events", JSON.stringify(hidden));
+      }catch(e){ console.error("localStorage error", e); }
+      closeHistDelete();
+      loadHistory();
+      return;
+    }
+
+    // permanent delete
+    if(!SUPA_READY){
+      alert("Not connected to the database — nothing to delete.");
+      closeHistDelete();
+      return;
+    }
+
+    const confirmBtn = document.getElementById("histDelConfirm");
+    const origLabel = confirmBtn.textContent;
+    confirmBtn.textContent = "Deleting…";
+    confirmBtn.disabled = true;
+
+    const enc = encodeURIComponent(name);
+    const targets = [
+      "booth_events?evt_event_name=eq." + enc,
+      "booth_sessions?event_name=eq." + enc,
+      "booth_photos?event_name=eq." + enc,
+      "event_archive?event_name=eq." + enc
+    ];
+
+    try{
+      const responses = await Promise.all(targets.map(path =>
+        fetch(SUPA_URL + "/rest/v1/" + path, {
+          method: "DELETE",
+          headers: {
+            "apikey": SUPA_KEY,
+            "Authorization": "Bearer " + SUPA_KEY,
+            "Prefer": "return=minimal"
           }
-          // success
-          closeHistDelete(); loadHistory();
-        }catch(err){
-          btn.textContent=orig; btn.disabled=false;
-          alert("Couldn't reach the database to delete.\n"+(err&&err.message?err.message:"")+"\n\nCheck your connection and try again.");
+        })
+      ));
+
+      const failed = responses.filter(r => !r.ok);
+      if(failed.length){
+        let detail = "";
+        try{ detail = await failed[0].text(); }catch(_){}
+        confirmBtn.textContent = origLabel;
+        confirmBtn.disabled = false;
+        if(failed[0].status === 401 || failed[0].status === 403 || /security|permission|policy/i.test(detail)){
+          alert("Supabase blocked the delete.\n\nGo to Supabase → SQL Editor and run:\n\ncreate policy \"public delete\" on booth_events for delete using (true);\ncreate policy \"public delete\" on booth_sessions for delete using (true);\ncreate policy \"public delete\" on booth_photos for delete using (true);\ncreate policy \"public delete\" on event_archive for delete using (true);");
+        } else {
+          alert("Delete failed (" + failed[0].status + ").\n" + (detail || "No detail.") + "\n\nEvent was NOT removed.");
         }
+        return;
       }
-    });
-  },300);
+
+      closeHistDelete();
+      loadHistory();
+
+    }catch(err){
+      confirmBtn.textContent = origLabel;
+      confirmBtn.disabled = false;
+      alert("Network error: " + (err && err.message || "unknown") + "\n\nCheck your connection and try again.");
+    }
+  });
+
 
 
 
