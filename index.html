@@ -27,6 +27,18 @@
   .sub{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--mint);font-weight:600;margin-top:5px}
   .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .controls select,.controls button{background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:13px;border-radius:10px;padding:9px 13px;cursor:pointer}
+  /* themed event dropdown */
+  .controls select{
+    -webkit-appearance:none;appearance:none;
+    background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.6));
+    border:1px solid var(--stroke-2);color:var(--ink);font-weight:500;
+    padding:9px 36px 9px 14px;border-radius:10px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%237df0d0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 13px center;
+    transition:border-color .2s,box-shadow .2s}
+  .controls select:hover{border-color:var(--mint)}
+  .controls select:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 3px rgba(125,240,208,.15)}
+  .controls select option{background:#0a2330;color:var(--ink)}
   .controls button.primary{background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b;font-weight:700;border:none}
   .controls button.danger{background:rgba(255,125,107,.14);border-color:rgba(255,125,107,.4);color:var(--coral);font-weight:600}
   .live-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);background:var(--glass);border:1px solid var(--stroke);border-radius:99px;padding:7px 13px}
@@ -149,6 +161,60 @@
   #reportView{display:none}
   body.report-mode #dashboardView{display:none}
   body.report-mode #reportView{display:block}
+  /* ===== EVENT HISTORY VIEW ===== */
+  #historyView{display:none;max-width:1280px;margin:0 auto;padding:30px 26px 70px}
+  body.history-mode #dashboardView{display:none}
+  body.history-mode #reportView{display:none}
+  body.history-mode #historyView{display:block}
+  .hist-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .hist-title{font-family:'Fraunces',serif;font-weight:600;font-size:24px}
+  .hist-sub{font-size:13px;color:var(--ink-faint);margin-bottom:24px;line-height:1.5}
+  .hist-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .hist-tot{background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.4));border:1px solid var(--stroke);border-radius:16px;padding:18px;position:relative;overflow:hidden}
+  .hist-tot:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--mint))}
+  .hist-tot .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+  .hist-tot .v{font-family:'Fraunces',serif;font-weight:700;font-size:34px;line-height:1;margin-top:8px;color:var(--accent,var(--mint))}
+  .hist-tot .s{font-size:11px;color:var(--ink-soft);margin-top:5px}
+  .hist-table-wrap{background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.3));border:1px solid var(--stroke);border-radius:16px;padding:8px;overflow-x:auto}
+  .hist-table{width:100%;border-collapse:collapse;min-width:720px}
+  .hist-table th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;padding:14px 16px;border-bottom:1px solid var(--stroke-2)}
+  .hist-table th:nth-child(n+3){text-align:right}
+  .hist-table td{padding:15px 16px;font-size:14px;color:var(--ink-soft);border-bottom:1px solid var(--stroke)}
+  .hist-table td:nth-child(n+3){text-align:right;font-family:'JetBrains Mono',monospace}
+  .hist-table tr:last-child td{border-bottom:none}
+  .hist-table tr:hover td{background:rgba(125,240,208,.04)}
+  .hist-table .ev-name{font-family:'Fraunces',serif;font-weight:600;font-size:15px;color:var(--ink)}
+  .hist-table .conv-cell{font-weight:700;color:var(--mint)}
+  .hist-table .conv-cell.low{color:var(--gold)}
+  .hist-empty{text-align:center;padding:50px;color:var(--ink-faint);font-style:italic}
+  /* expandable detail rows */
+  .hist-row{cursor:pointer;transition:background .15s}
+  .hist-row .ev-name{transition:color .15s}
+  .hist-row:hover .ev-name{color:var(--mint)}
+  .hist-detail{display:none}
+  .hist-detail.open{display:table-row}
+  .hist-detail td{padding:0!important;border-bottom:1px solid var(--stroke-2)!important}
+  .exp-wrap{padding:8px 16px 20px;animation:expFade .3s ease}
+  @keyframes expFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .exp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  .exp-card{background:rgba(255,255,255,.03);border:1px solid var(--stroke);border-radius:12px;padding:14px 16px}
+  .exp-h{font-family:'Fraunces',serif;font-size:13px;color:var(--mint);margin-bottom:12px;font-weight:600}
+  .exp-frow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+  .exp-fl{width:80px;color:var(--ink-faint);flex-shrink:0}
+  .exp-fbar{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
+  .exp-ffill{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--aqua));border-radius:99px}
+  .exp-fv{width:34px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--ink);font-weight:600;flex-shrink:0}
+  .exp-stat{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:5px 0;color:var(--ink-soft)}
+  .exp-stat b{color:var(--ink);font-family:'JetBrains Mono',monospace}
+  .exp-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:6px;border-top:1px solid var(--stroke)}
+  .exp-link{color:var(--aqua);font-size:13px;font-weight:600;text-decoration:none}
+  .exp-link:hover{color:var(--mint)}
+  .exp-del-group{display:flex;gap:8px}
+  .exp-hide,.exp-delete{font-family:inherit;font-size:12px;border-radius:8px;padding:7px 13px;cursor:pointer;font-weight:600;border:1px solid var(--stroke-2);background:var(--glass);color:var(--ink-soft)}
+  .exp-hide:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .exp-delete{border-color:rgba(255,125,107,.4);color:var(--coral);background:rgba(255,125,107,.08)}
+  .exp-delete:hover{background:rgba(255,125,107,.16)}
+  .hide-confirm{background:var(--glass)!important;color:var(--ink)!important;border:1px solid var(--stroke-2)!important}
   /* CLIENT MODE: hide all the editing controls, keep just a clean print bar */
   body.client-mode .tb-group,
   body.client-mode .tb-divider,
@@ -228,6 +294,8 @@
       <button class="primary" id="startEventBtn">✦ Start Event</button>
       <button id="refreshBtn">↻ Refresh</button>
       <button class="view-switch-btn" id="toReportBtn">📄 Generate Report</button>
+      <button id="copyClientLinkBtn">🔗 Copy Client Link</button>
+      <button id="toHistoryBtn">📚 History</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
   </header>
@@ -305,6 +373,34 @@
 
   <div class="footnote">OxygenBar360 · Analytics Command Center · keep open during events to watch it live ✦</div>
 </div>
+</div>
+<!-- /dashboardView -->
+
+<!-- ===== EVENT HISTORY VIEW ===== -->
+<div id="historyView">
+  <div class="hist-head">
+    <button class="back-to-dash" id="backFromHistory">← Back to Dashboard</button>
+    <h2 class="hist-title">📚 Event History</h2>
+  </div>
+  <p class="hist-sub">Every event you've run, with the numbers that matter. Compare performance across events to see what works.</p>
+
+  <!-- summary totals -->
+  <div class="hist-totals" id="histTotals"></div>
+
+  <div class="hist-table-wrap">
+    <table class="hist-table" id="histTable">
+      <thead>
+        <tr>
+          <th>Event</th><th>Date</th>
+          <th>Scans</th><th>Started</th><th>Shared</th>
+          <th>Scan→Share</th><th>Reach</th><th>Avg Time</th>
+        </tr>
+      </thead>
+      <tbody id="histBody"></tbody>
+    </table>
+    <div class="hist-empty" id="histEmpty" style="display:none">No events yet. Start an event and once it has activity, it'll appear here.</div>
+  </div>
+</div>
 
 <!-- close-out modal -->
 <div class="modal-bg" id="modalBg">
@@ -349,6 +445,18 @@
     <div class="mbtns" style="margin-top:20px">
       <button class="cancel" id="seCancel">Close</button>
       <button class="confirm" id="seGenerate" style="background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b">Generate Links &amp; Start</button>
+    </div>
+  </div>
+</div>
+
+<!-- history delete/hide confirmation modal -->
+<div class="modal-bg" id="histDelBg">
+  <div class="modal">
+    <h3 id="histDelTitle">Delete Event?</h3>
+    <p id="histDelText"></p>
+    <div class="mbtns">
+      <button class="cancel" id="histDelCancel">Cancel</button>
+      <button class="confirm" id="histDelConfirm">Confirm</button>
     </div>
   </div>
 </div>
@@ -428,22 +536,29 @@
       <div class="section-title">Event at a Glance</div>
       <div class="section-sub">KEY PERFORMANCE INDICATORS</div>
       <div class="kpi-row">
-        <div class="kpi a1"><div class="kl">Sessions Started</div><div class="kv" id="rSessions">—</div><div class="ks">guests who opened the booth</div></div>
-        <div class="kpi a2"><div class="kl">Photos Shared</div><div class="kv" id="rShares">—</div><div class="ks" id="rSharesSub">completed &amp; shared</div></div>
-        <div class="kpi a3"><div class="kl">Completion Rate</div><div class="kv" id="rRate">—</div><div class="ks">started → shared</div></div>
+        <div class="kpi a2"><div class="kl">Total Scans</div><div class="kv" id="rScans">—</div><div class="ks">guests who engaged the booth</div></div>
+        <div class="kpi a1"><div class="kl">Photos Shared</div><div class="kv" id="rShares">—</div><div class="ks" id="rSharesSub">completed &amp; shared</div></div>
+        <div class="kpi a5"><div class="kl">Scan → Share</div><div class="kv" id="rConv">—</div><div class="ks">overall conversion</div></div>
         <div class="kpi a4"><div class="kl">Avg Session Time</div><div class="kv" id="rTime">—</div><div class="ks">open to share</div></div>
+      </div>
+      <div class="kpi-row" style="margin-top:14px">
+        <div class="kpi a3"><div class="kl">Total Engagement</div><div class="kv" id="rEngageMin">—</div><div class="ks">minutes guests spent with your brand</div></div>
+        <div class="kpi a6"><div class="kl">Peak Throughput</div><div class="kv" id="rThroughput">—</div><div class="ks">guests served / hour at peak</div></div>
+        <div class="kpi a2"><div class="kl">Repeat Rate</div><div class="kv" id="rRepeat">—</div><div class="ks">made more than one photo</div></div>
+        <div class="kpi a1"><div class="kl">Busiest Hour</div><div class="kv" id="rPeakHour" style="font-size:30px">—</div><div class="ks">when the booth peaked</div></div>
       </div>
     </div>
 
     <!-- ROI -->
     <div class="section">
-      <div class="section-title">Brand Impact &amp; ROI</div>
-      <div class="section-sub">WHAT THIS EVENT GENERATED FOR YOUR BRAND</div>
+      <div class="section-title">Reach &amp; Media Value</div>
+      <div class="section-sub">WHAT THIS ACTIVATION GENERATED FOR YOUR BRAND</div>
       <div class="roi-box">
-        <div class="roi-grid">
-          <div class="roi-item"><div class="rv" id="rPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
-          <div class="roi-item"><div class="rv" id="rReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
-          <div class="roi-item"><div class="rv" id="rCPI">—</div><div class="rl">Estimated cost per branded impression</div></div>
+        <div class="roi-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="roi-item"><div class="rv" id="repPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
+          <div class="roi-item"><div class="rv" id="repReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
+          <div class="roi-item"><div class="rv" id="repAdValue">—</div><div class="rl">Equivalent ad spend to reach the same audience*</div></div>
+          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl">Your effective cost per branded impression</div></div>
         </div>
         <div class="roi-note" id="roiNote"></div>
       </div>
@@ -482,6 +597,15 @@
       </div>
     </div>
 
+    <!-- PEAK ACTIVITY -->
+    <div class="section">
+      <div class="section-title">Activity Timeline</div>
+      <div class="section-sub">WHEN THE BOOTH WAS BUSIEST — USEFUL FOR PLANNING YOUR NEXT EVENT</div>
+      <div class="panel">
+        <div class="barlist" id="rHours"></div>
+      </div>
+    </div>
+
     <!-- HIGHLIGHTS -->
     <div class="section">
       <div class="section-title">Event Highlights</div>
@@ -512,7 +636,12 @@
   const EMOJI_NAMES={"🌿":"Grow","✨":"Shine","💨":"Breathe","💚":"Care","☀️":"Sun","🧘":"Calm"};
   const EMOJIS=["🌿","✨","💨","💚","☀️","🧘"];
   const FUNNEL_STEPS=["Session Started","Experience Engaged","Layout Picked","Photo Captured","Photo Shared"];
-  const FUNNEL_LABELS={"Session Started":"Scanned token","Experience Engaged":"Engaged","Layout Picked":"Picked layout","Photo Captured":"Added photo","Photo Shared":"Shared ✦"};
+  const FUNNEL_LABELS={"Session Started":"Started","Experience Engaged":"Engaged","Layout Picked":"Picked layout","Photo Captured":"Added photo","Photo Shared":"Shared ✦"};
+  // entry events: prefer "Scan" (new), fall back to "Session Started" (old data)
+  function entryEvents(events){
+    const scans=events.filter(e=>e.event_name==="Scan");
+    return scans.length?scans:events.filter(e=>e.event_name==="Session Started");
+  }
   const GRADS=["linear-gradient(90deg,var(--mint),var(--aqua))","linear-gradient(90deg,var(--aqua),var(--violet))","linear-gradient(90deg,var(--violet),var(--coral))","linear-gradient(90deg,var(--gold),var(--coral))","linear-gradient(90deg,var(--lime),var(--mint))"];
 
   let followers=300, fee=1500;
@@ -525,21 +654,23 @@
     const evts=[]; const tokens=["table-1","table-2","table-3","bar","entrance"];
     const srcs={"table-1":"qr","table-2":"qr","table-3":"nfc","bar":"nfc","entrance":"qr"};
     let sid=0;
-    // simulate 80 scans with realistic drop-off
-    for(let i=0;i<80;i++){
+    // simulate 95 scans → ~80 start → realistic drop-off after
+    for(let i=0;i<95;i++){
       const tok=tokens[Math.floor(Math.random()*tokens.length)];
       const src=srcs[tok];
       const id="demo_"+(sid++);
       const hr=17+Math.floor(Math.random()*5);
       const ts=new Date(); ts.setHours(hr,Math.floor(Math.random()*60));
       const push=(name,val)=>evts.push({session_id:id,event_name:name,event_value:val,src,token_id:tok,created_at:ts.toISOString()});
-      push("Session Started");
-      if(Math.random()<0.82){ push("Experience Engaged");
-        if(Math.random()<0.88){ push("Layout Picked",["single","single","duo","triple","quad"][Math.floor(Math.random()*5)]);
-          if(Math.random()<0.9){ push("Photo Captured");
-            if(Math.random()<0.85){ push("Styled","theme:"+["fresh","calm","glow","party","clean"][Math.floor(Math.random()*5)]);
-              if(Math.random()<0.92){ push("Photo Shared"); }
-            }}}}
+      push("Scan");  // pre-funnel: everyone who landed
+      if(Math.random()<0.84){ push("Session Started");  // tapped Start = funnel entry
+        if(Math.random()<0.82){ push("Experience Engaged");
+          if(Math.random()<0.88){ push("Layout Picked",["single","single","duo","triple","quad"][Math.floor(Math.random()*5)]);
+            if(Math.random()<0.9){ push("Photo Captured");
+              if(Math.random()<0.85){ push("Styled","theme:"+["fresh","calm","glow","party","clean"][Math.floor(Math.random()*5)]);
+                if(Math.random()<0.92){ push("Photo Shared"); }
+              }}}}
+      }
     }
     return evts;
   }
@@ -608,31 +739,40 @@
     FUNNEL_STEPS.forEach(step=>{
       stepSessions[step]=new Set(events.filter(e=>e.event_name===step).map(e=>e.session_id)).size;
     });
-    const scans=stepSessions["Session Started"]||0;
+    // PRE-FUNNEL: scans = everyone who loaded the booth
+    const scans=new Set(events.filter(e=>e.event_name==="Scan").map(e=>e.session_id)).size
+                || stepSessions["Session Started"]||0;  // fallback for old data
+    const started=stepSessions["Session Started"]||0;
     const shares=stepSessions["Photo Shared"]||0;
     const conv=scans?Math.round(shares/scans*100):0;
+    const startRate=scans?Math.round(started/scans*100):0;
     const reach=shares*followers;
 
     // HERO
     animate("#hConv",conv,"%");
-    $("#hConvSub").textContent=`${shares} of ${scans} who scanned a token completed & shared`;
+    $("#hConvSub").textContent=`${shares} of ${scans} who scanned went all the way to share`;
     animate("#hScans",scans);
     animate("#hShares",shares);
     $("#hReach").textContent=fmt(reach);
 
     // FUNNEL with drop-off
     const fwrap=$("#funnel"); fwrap.innerHTML="";
-    const top=stepSessions[FUNNEL_STEPS[0]]||1;
-    FUNNEL_STEPS.forEach((step,i)=>{
-      const n=stepSessions[step]||0;
+    // Build display rows: Scanned (pre-funnel) on top, then the funnel steps
+    const rows=[{label:"Scanned",n:scans}].concat(
+      FUNNEL_STEPS.map(step=>({label:FUNNEL_LABELS[step],n:stepSessions[step]||0}))
+    );
+    const top=scans||rows[1].n||1;
+    rows.forEach((row,i)=>{
+      const n=row.n;
       const pctOfTop=top?Math.round(n/top*100):0;
-      const prevN=i>0?(stepSessions[FUNNEL_STEPS[i-1]]||0):n;
+      const prevN=i>0?rows[i-1].n:n;
       const dropPct=prevN?Math.round((prevN-n)/prevN*100):0;
+      const grad=GRADS[Math.min(i,GRADS.length-1)];
       const stepDiv=document.createElement("div"); stepDiv.className="fstep";
       stepDiv.innerHTML=`
         <div class="fbar-wrap">
-          <div class="fbar-label">${FUNNEL_LABELS[step]}</div>
-          <div class="fbar-track"><div class="fbar-fill" data-w="${pctOfTop}" style="background:${GRADS[i]}">${pctOfTop}%</div></div>
+          <div class="fbar-label">${row.label}</div>
+          <div class="fbar-track"><div class="fbar-fill" data-w="${pctOfTop}" style="background:${grad}">${pctOfTop}%</div></div>
           <div class="fbar-val"><span class="n">${n}</span></div>
         </div>
         ${i>0&&dropPct>0?`<div class="fdrop ${dropPct>40?'bad':''}">↓ ${dropPct}% drop-off (${prevN-n} left here)</div>`:''}`;
@@ -643,7 +783,7 @@
     // TOKEN LEADERBOARD — scans per token
     const tokenScans={};
     const tokenSrc={};
-    events.filter(e=>e.event_name==="Session Started").forEach(e=>{
+    entryEvents(events).forEach(e=>{
       const t=e.token_id||"(untagged)";
       tokenScans[t]=(tokenScans[t]||0)+1;
       tokenSrc[t]=e.src||"unknown";
@@ -669,12 +809,12 @@
     }).join(""):'<div style="color:var(--ink-faint);font-size:13px;padding:10px">No token data yet. Add ?token=name to your QR/NFC URLs to track individual tokens.</div>';
 
     // SRC bars
-    const srcs=countBy(events.filter(e=>e.event_name==="Session Started"),"src");
+    const srcs=countBy(entryEvents(events),"src");
     bars("#srcBars",srcs,SRC_NAMES,"linear-gradient(90deg,var(--aqua),var(--violet))");
 
     // HOUR bars (peak activity)
     const hours={};
-    events.filter(e=>e.event_name==="Session Started").forEach(e=>{
+    entryEvents(events).forEach(e=>{
       const h=new Date(e.created_at).getHours();
       const label=(h%12||12)+(h<12?"am":"pm");
       hours[label]=(hours[label]||0)+1;
@@ -704,7 +844,7 @@
 
     // LIVE counter — sessions started in last 5 min
     const now=Date.now();
-    const liveCount=new Set(events.filter(e=>e.event_name==="Session Started"&&(now-new Date(e.created_at).getTime())<300000).map(e=>e.session_id)).size;
+    const liveCount=new Set(entryEvents(events).filter(e=>(now-new Date(e.created_at).getTime())<300000).map(e=>e.session_id)).size;
     $("#liveNow").textContent=liveCount;
   }
 
@@ -766,6 +906,27 @@
   });
 
   $("#refreshBtn").addEventListener("click",loadAll);
+
+  // ===== COPY CLIENT REPORT LINK (dashboard header) =====
+  $("#copyClientLinkBtn").addEventListener("click",()=>{
+    const ev=$("#eventSelect").value;
+    if(!ev||ev==="All Events"){
+      alert("Pick a specific event from the dropdown first, then copy its client report link.");
+      return;
+    }
+    const link=location.origin+location.pathname+"?event="+encodeURIComponent(ev)+"&report=1";
+    const btn=$("#copyClientLinkBtn");
+    navigator.clipboard.writeText(link).then(()=>{
+      const orig=btn.textContent; btn.textContent="✓ Link Copied!";
+      setTimeout(()=>btn.textContent=orig,1800);
+    }).catch(()=>{
+      const ta=document.createElement("textarea"); ta.value=link; document.body.appendChild(ta); ta.select();
+      try{document.execCommand("copy");}catch(_){}
+      document.body.removeChild(ta);
+      const orig=btn.textContent; btn.textContent="✓ Link Copied!";
+      setTimeout(()=>btn.textContent=orig,1800);
+    });
+  });
 
   // ===== START EVENT =====
   // your live booth URL — change here if your booth ever moves
@@ -834,6 +995,263 @@
   });
 
   loadEvents();
+  // ===== EVENT HISTORY =====
+  (function(){
+    const toHist=document.getElementById('toHistoryBtn');
+    const backH=document.getElementById('backFromHistory');
+    if(toHist) toHist.addEventListener('click',()=>{
+      document.body.classList.add('history-mode');
+      window.scrollTo(0,0);
+      loadHistory();
+    });
+    if(backH) backH.addEventListener('click',()=>{
+      document.body.classList.remove('history-mode');
+      window.scrollTo(0,0);
+    });
+  })();
+
+  async function loadHistory(){
+    const body=document.getElementById('histBody');
+    const empty=document.getElementById('histEmpty');
+    const totals=document.getElementById('histTotals');
+    body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:30px">Loading…</td></tr>';
+
+    let events=[], sessions=[];
+    if(SUPA_READY){
+      try{
+        [events,sessions]=await Promise.all([
+          sb("booth_events?select=*&limit=20000"),
+          sb("booth_sessions?select=*&limit=20000")
+        ]);
+      }catch(_){}
+    }
+    // demo fallback if nothing
+    if(!events.length){
+      // synthesize a couple of past events for preview
+      const demoNames=["Summer Rooftop Mixer","Acme Holiday Gala","Wellness Expo"];
+      events=[]; sessions=[];
+      demoNames.forEach((nm,idx)=>{
+        const dayAgo=new Date(); dayAgo.setDate(dayAgo.getDate()-(idx+1)*9);
+        const base=60+Math.floor(Math.random()*60);
+        for(let i=0;i<base;i++){
+          const sid=nm.replace(/\s/g,'')+"_"+i;
+          const ts=new Date(dayAgo); ts.setHours(18+Math.floor(Math.random()*4));
+          const push=(n)=>events.push({session_id:sid,event_name:n,evt_event_name:nm,src:Math.random()>.5?"qr":"nfc",created_at:ts.toISOString()});
+          push("Scan");
+          if(Math.random()<.85){push("Session Started");
+            if(Math.random()<.8){
+              if(Math.random()<.85){
+                const shared=Math.random()<.88;
+                if(shared){push("Photo Shared"); sessions.push({session_id:sid,event_name:nm,share_completed:true,session_duration_seconds:50+Math.floor(Math.random()*60)});}
+              }}}
+        }
+      });
+    }
+
+    // group by event name — compute deep stats per event
+    const HIDDEN = JSON.parse(localStorage.getItem('ob360_hidden_events')||'[]');
+    const allEvNames=[...new Set(events.map(e=>e.evt_event_name).filter(Boolean))];
+    const evNames=allEvNames.filter(nm=>!HIDDEN.includes(nm));
+    const rows=evNames.map(nm=>{
+      const evEvents=events.filter(e=>e.evt_event_name===nm);
+      const uniq=name=>new Set(evEvents.filter(e=>e.event_name===name).map(e=>e.session_id)).size;
+      const scans=uniq("Scan")||uniq("Session Started");
+      const started=uniq("Session Started");
+      const engaged=uniq("Experience Engaged");
+      const pickedLayout=uniq("Layout Picked");
+      const captured=uniq("Photo Captured");
+      const shared=uniq("Photo Shared");
+      const conv=scans?Math.round(shared/scans*100):0;
+      const reach=shared*followers;
+      const adValue=Math.round(reach/1000*10); // $10 CPM
+      const evSessions=sessions.filter(s=>s.event_name===nm);
+      const sharedSessions=evSessions.filter(s=>s.share_completed&&s.session_duration_seconds>0);
+      const avgT=sharedSessions.length?Math.round(sharedSessions.reduce((a,b)=>a+b.session_duration_seconds,0)/sharedSessions.length):0;
+      const totalMin=Math.round(sharedSessions.reduce((a,b)=>a+b.session_duration_seconds,0)/60);
+      const repeats=evSessions.filter(s=>s.made_another).length;
+      const repeatRate=evSessions.length?Math.round(repeats/evSessions.length*100):0;
+      // QR vs NFC from entry events
+      const entryEv=evEvents.filter(e=>e.event_name==="Scan").length?evEvents.filter(e=>e.event_name==="Scan"):evEvents.filter(e=>e.event_name==="Session Started");
+      const qr=entryEv.filter(e=>e.src==="qr").length, nfc=entryEv.filter(e=>e.src==="nfc").length;
+      // peak hour
+      const hours={};
+      entryEv.forEach(e=>{const h=new Date(e.created_at).getHours();hours[h]=(hours[h]||0)+1;});
+      let peakHour=null,peakCount=0;
+      Object.entries(hours).forEach(([h,c])=>{if(c>peakCount){peakCount=c;peakHour=+h;}});
+      const peakLabel=peakHour!==null?((peakHour%12||12)+(peakHour<12?" AM":" PM")):"—";
+      // top layout / theme
+      const layoutCount=countBy(evSessions,"layout_chosen");
+      const themeCount=countBy(evSessions,"theme_chosen");
+      const topLayout=Object.entries(layoutCount).sort((a,b)=>b[1]-a[1])[0];
+      const topTheme=Object.entries(themeCount).sort((a,b)=>b[1]-a[1])[0];
+      const dates=evEvents.map(e=>new Date(e.created_at)).sort((a,b)=>a-b);
+      const date=dates.length?dates[0].toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):"—";
+      const sortTs=dates.length?dates[0].getTime():0;
+      return {nm,date,sortTs,scans,started,engaged,pickedLayout,captured,shared,conv,reach,adValue,avgT,totalMin,repeats,repeatRate,qr,nfc,peakLabel,
+        topLayout:topLayout?(LAYOUT_NAMES[topLayout[0]]||topLayout[0]):"—",
+        topTheme:topTheme?(THEME_NAMES[topTheme[0]]||topTheme[0]):"—"};
+    }).sort((a,b)=>b.sortTs-a.sortTs);  // newest first
+
+    if(!rows.length){ body.innerHTML=""; empty.style.display="block"; totals.innerHTML=""; return; }
+    empty.style.display="none";
+
+    body.innerHTML=rows.map((r,idx)=>{
+      const funnelSteps=[
+        {l:"Scanned",v:r.scans},{l:"Started",v:r.started},{l:"Engaged",v:r.engaged},
+        {l:"Picked layout",v:r.pickedLayout},{l:"Added photo",v:r.captured},{l:"Shared",v:r.shared}
+      ];
+      const fmax=Math.max(1,...funnelSteps.map(s=>s.v));
+      const funnelHTML=funnelSteps.map(s=>{
+        const p=Math.round(s.v/fmax*100);
+        return `<div class="exp-frow"><span class="exp-fl">${s.l}</span><span class="exp-fbar"><span class="exp-ffill" style="width:${p}%"></span></span><span class="exp-fv">${s.v}</span></div>`;
+      }).join("");
+      return `
+      <tr class="hist-row" data-idx="${idx}">
+        <td class="ev-name">▸ ${r.nm}</td>
+        <td>${r.date}</td>
+        <td>${r.scans}</td>
+        <td>${r.started}</td>
+        <td>${r.shared}</td>
+        <td class="conv-cell ${r.conv<40?'low':''}">${r.conv}%</td>
+        <td>${fmt(r.reach)}</td>
+        <td>${r.avgT?"~"+r.avgT+"s":"—"}</td>
+      </tr>
+      <tr class="hist-detail" data-detail="${idx}">
+        <td colspan="8">
+          <div class="exp-wrap">
+            <div class="exp-grid">
+              <div class="exp-card">
+                <div class="exp-h">Conversion Funnel</div>
+                ${funnelHTML}
+              </div>
+              <div class="exp-card">
+                <div class="exp-h">Key Metrics</div>
+                <div class="exp-stat"><span>QR vs NFC</span><b>${r.qr} / ${r.nfc}</b></div>
+                <div class="exp-stat"><span>Peak hour</span><b>${r.peakLabel}</b></div>
+                <div class="exp-stat"><span>Repeat rate</span><b>${r.repeatRate}%</b></div>
+                <div class="exp-stat"><span>Total engagement</span><b>${r.totalMin||0} min</b></div>
+              </div>
+              <div class="exp-card">
+                <div class="exp-h">Highlights</div>
+                <div class="exp-stat"><span>Top layout</span><b>${r.topLayout}</b></div>
+                <div class="exp-stat"><span>Top vibe</span><b>${r.topTheme}</b></div>
+                <div class="exp-stat"><span>Ad-value equiv.*</span><b>$${Number(r.adValue).toLocaleString()}</b></div>
+                <div class="exp-stat"><span>Est. reach</span><b>${fmt(r.reach)}</b></div>
+              </div>
+            </div>
+            <div class="exp-actions">
+              <a class="exp-link" href="?event=${encodeURIComponent(r.nm)}&report=1" target="_blank">📄 Open client report ↗</a>
+              <div class="exp-del-group">
+                <button class="exp-hide" data-hide="${r.nm.replace(/"/g,'&quot;')}">Hide from history</button>
+                <button class="exp-delete" data-del="${r.nm.replace(/"/g,'&quot;')}">🗑 Permanently delete</button>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+    }).join("");
+
+    // wire up row expand/collapse
+    body.querySelectorAll(".hist-row").forEach(row=>{
+      row.addEventListener("click",e=>{
+        if(e.target.closest("button")||e.target.closest("a")) return;
+        const idx=row.dataset.idx;
+        const detail=body.querySelector(`[data-detail="${idx}"]`);
+        const open=detail.classList.toggle("open");
+        row.querySelector(".ev-name").textContent=(open?"▾ ":"▸ ")+row.querySelector(".ev-name").textContent.replace(/^[▸▾]\s/,"");
+      });
+    });
+    // hide from history
+    body.querySelectorAll(".exp-hide").forEach(btn=>{
+      btn.addEventListener("click",()=>openHistDelete(btn.dataset.hide,"hide"));
+    });
+    // permanent delete
+    body.querySelectorAll(".exp-delete").forEach(btn=>{
+      btn.addEventListener("click",()=>openHistDelete(btn.dataset.del,"delete"));
+    });
+
+    // totals across visible events
+    const tScans=rows.reduce((a,b)=>a+b.scans,0);
+    const tShares=rows.reduce((a,b)=>a+b.shared,0);
+    const tReach=rows.reduce((a,b)=>a+b.reach,0);
+    const avgConv=tScans?Math.round(tShares/tScans*100):0;
+    totals.innerHTML=`
+      <div class="hist-tot" style="--accent:var(--mint)"><div class="l">Total Events</div><div class="v">${rows.length}</div><div class="s">run to date</div></div>
+      <div class="hist-tot" style="--accent:var(--aqua)"><div class="l">Total Photos Shared</div><div class="v">${tShares}</div><div class="s">across all events</div></div>
+      <div class="hist-tot" style="--accent:var(--gold)"><div class="l">Total Est. Reach</div><div class="v">${fmt(tReach)}</div><div class="s">cumulative impressions</div></div>
+      <div class="hist-tot" style="--accent:var(--violet)"><div class="l">Avg Conversion</div><div class="v">${avgConv}%</div><div class="s">scan → share, all events</div></div>`;
+  }
+
+  // ── history delete/hide confirmation ──
+  let _histPending=null;
+  function openHistDelete(name,mode){
+    _histPending={name,mode};
+    const isDel=mode==="delete";
+    $("#histDelTitle").textContent=isDel?"Permanently Delete Event?":"Hide Event from History?";
+    $("#histDelText").innerHTML=isDel
+      ? `This <b>permanently erases all data</b> for "<b>${name}</b>" from the database — sessions, events, everything. This cannot be undone, and the client report link will stop working. Are you sure?`
+      : `This hides "<b>${name}</b>" from your history view. The data stays saved and the client report link keeps working — you can unhide it later. Just keeps your list tidy.`;
+    $("#histDelConfirm").textContent=isDel?"Permanently Delete":"Hide It";
+    $("#histDelConfirm").className=isDel?"confirm":"confirm hide-confirm";
+    $("#histDelBg").classList.add("show");
+  }
+  function closeHistDelete(){ $("#histDelBg").classList.remove("show"); _histPending=null; }
+
+  // wire modal buttons once
+  document.addEventListener("DOMContentLoaded",()=>{});
+  setTimeout(()=>{
+    const cancel=$("#histDelCancel"), confirm=$("#histDelConfirm");
+    if(cancel) cancel.addEventListener("click",closeHistDelete);
+    if(confirm) confirm.addEventListener("click",async()=>{
+      if(!_histPending) return;
+      const {name,mode}=_histPending;
+      if(mode==="hide"){
+        const hidden=JSON.parse(localStorage.getItem('ob360_hidden_events')||'[]');
+        if(!hidden.includes(name)) hidden.push(name);
+        localStorage.setItem('ob360_hidden_events',JSON.stringify(hidden));
+        closeHistDelete(); loadHistory();
+      } else {
+        // permanent delete from Supabase — check every response, surface failures
+        if(!SUPA_READY){ alert("Not connected to the database, so there's nothing to delete."); closeHistDelete(); return; }
+        const btn=$("#histDelConfirm");
+        const orig=btn.textContent;
+        btn.textContent="Deleting…"; btn.disabled=true;
+        const enc=encodeURIComponent(name);
+        const tables=["booth_events?evt_event_name=eq.","booth_sessions?event_name=eq.","booth_photos?event_name=eq.","event_archive?event_name=eq."];
+        try{
+          const responses=await Promise.all(tables.map(t=>
+            fetch(SUPA_URL+"/rest/v1/"+t+enc,{
+              method:"DELETE",
+              headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Prefer":"return=minimal"}
+            })
+          ));
+          const failed=responses.filter(r=>!r.ok);
+          if(failed.length){
+            // surface the real reason instead of silently "succeeding"
+            let detail="";
+            try{ detail=await failed[0].text(); }catch(_){}
+            const status=failed[0].status;
+            btn.textContent=orig; btn.disabled=false;
+            if(status===401||status===403 || /row-level security|permission|policy/i.test(detail)){
+              alert("Delete was blocked by the database's security rules.\n\nFix: in Supabase → SQL Editor, run the \"public delete\" policy for these tables (booth_events, booth_sessions, booth_photos, event_archive), then try again.");
+            } else {
+              alert("Delete failed (status "+status+").\n"+(detail?detail.slice(0,200):"No detail returned.")+"\n\nThe event was NOT removed.");
+            }
+            return; // leave modal open so they can retry
+          }
+          // success
+          closeHistDelete(); loadHistory();
+        }catch(err){
+          btn.textContent=orig; btn.disabled=false;
+          alert("Couldn't reach the database to delete.\n"+(err&&err.message?err.message:"")+"\n\nCheck your connection and try again.");
+        }
+      }
+    });
+  },300);
+
+
+
+
   loadAll();
   setInterval(loadAll,30000);
 })();
@@ -867,7 +1285,6 @@
       window.scrollTo(0,0);
     });
   })();
-
 
   // ===== REPORT VIEW LOGIC =====
   
@@ -906,6 +1323,12 @@
     return await r.json();
   }
 
+  async function fetchReportEvents(event){
+    const url=SUPA_URL+"/rest/v1/booth_events?evt_event_name=eq."+encodeURIComponent(event)+"&select=session_id,event_name,src,created_at&limit=20000";
+    const r=await fetch(url,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+    return await r.json();
+  }
+
   function countBy(arr,key){const o={};arr.forEach(s=>{const v=s[key];if(v)o[v]=(o[v]||0)+1;});return o;}
   function fmt(n){return n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;}
   function pct(a,b){return b?Math.round(a/b*100)+"%":"—";}
@@ -936,8 +1359,9 @@
     });
   }
 
-  function render(sessions, photos, cfg){
+  function render(sessions, photos, cfg, repEvents){
     const {event,client,date,venue,fee,followers}=cfg;
+    repEvents = repEvents || [];
     const total=sessions.length;
     const shared=sessions.filter(s=>s.share_completed).length;
     const photoCount=photos.length||shared;
@@ -946,6 +1370,34 @@
     const avgT=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
     const reach=photoCount*followers;
     const cpi=reach&&fee?("$"+(fee/reach).toFixed(3)):"—";
+
+    // ── NEW ORGANIZER STATS ──
+    // Total scans: prefer Scan events, fall back to Session Started, else sessions count
+    let scans = new Set(repEvents.filter(e=>e.event_name==="Scan").map(e=>e.session_id)).size;
+    if(!scans) scans = new Set(repEvents.filter(e=>e.event_name==="Session Started").map(e=>e.session_id)).size;
+    if(!scans) scans = total;
+    const conv = scans?Math.round(shared/scans*100):0;
+    // Total engagement minutes (sum of all completed session durations)
+    const totalSec = durs.reduce((a,b)=>a+b,0);
+    const engageMin = Math.round(totalSec/60);
+    // Repeat rate
+    const repeats = sessions.filter(s=>s.made_another).length;
+    const repeatRate = total?Math.round(repeats/total*100):0;
+    // Peak hour + throughput — from events (entry events) or photos as fallback
+    const entryForHours = repEvents.filter(e=>e.event_name==="Scan").length
+      ? repEvents.filter(e=>e.event_name==="Scan")
+      : (repEvents.filter(e=>e.event_name==="Session Started").length
+          ? repEvents.filter(e=>e.event_name==="Session Started")
+          : photos);
+    const hourCounts={};
+    entryForHours.forEach(e=>{ const h=new Date(e.created_at).getHours(); hourCounts[h]=(hourCounts[h]||0)+1; });
+    let peakHour=null, peakCount=0;
+    Object.entries(hourCounts).forEach(([h,c])=>{ if(c>peakCount){peakCount=c;peakHour=+h;} });
+    const peakLabel = peakHour!==null ? ((peakHour%12||12)+(peakHour<12?" AM":" PM")) : "—";
+    const throughput = peakCount || (avgT?Math.round(3600/Math.max(avgT,1)):0);
+    // Ad value equivalent: reach impressions at a typical $10 CPM (cost per 1000 impressions)
+    const CPM = 10;
+    const adValue = Math.round(reach/1000*CPM);
 
     // cover meta
     let meta=`<span>Event:</span> ${event}`;
@@ -962,19 +1414,34 @@
       if(logoUrl){ $("#clientLogoImg").src=logoUrl; $("#clientLogoImg").classList.add("show"); }
     }
 
-    // KPIs
-    $("#rSessions").textContent=total;
+    // KPIs (row 1)
+    $("#rScans").textContent=scans;
     $("#rShares").textContent=shared;
-    $("#rSharesSub").textContent=shared+" of "+total+" completed";
-    $("#rRate").textContent=rate+"%";
+    $("#rSharesSub").textContent=shared+" of "+scans+" scans";
+    $("#rConv").textContent=conv+"%";
     $("#rTime").textContent=avgT?"~"+avgT+"s":"—";
+    // KPIs (row 2)
+    $("#rEngageMin").textContent=engageMin||"—";
+    $("#rThroughput").textContent=throughput?"~"+throughput:"—";
+    $("#rRepeat").textContent=repeatRate+"%";
+    $("#rPeakHour").textContent=peakLabel;
 
-    // ROI
-    $("#rPhotos").textContent=photoCount;
-    $("#rReach").textContent=fmt(reach);
-    $("#rCPI").textContent=cpi;
-    $("#roiNote").textContent=`Based on ${photoCount} branded photos × estimated ${followers} followers per guest average.`
-      +(fee?` Event investment: $${Number(fee).toLocaleString()}. Every impression costs pennies.`:" Enter your event fee above to calculate cost per impression.");
+    // ROI + ad value
+    $("#repPhotos").textContent=photoCount;
+    $("#repReach").textContent=fmt(reach);
+    $("#repAdValue").textContent="$"+Number(adValue).toLocaleString();
+    $("#repCPI").textContent=cpi;
+    $("#roiNote").textContent=`Based on ${photoCount} branded photos × ~${followers} followers per guest = ${fmt(reach)} estimated impressions. `
+      +`*Equivalent ad spend estimated at a $${CPM} CPM (industry-standard cost per 1,000 social impressions).`
+      +(fee?` Against a $${Number(fee).toLocaleString()} investment, that's $${reach?(fee/reach).toFixed(3):"—"} per impression.`:"");
+
+    // PEAK ACTIVITY timeline (hour bars)
+    const hourBars={};
+    Object.keys(hourCounts).sort((a,b)=>+a-+b).forEach(h=>{
+      const label=(h%12||12)+(h<12?"am":"pm");
+      hourBars[label]=hourCounts[h];
+    });
+    bars("#rHours",Object.keys(hourBars).length?hourBars:{"—":0},{},"linear-gradient(90deg,var(--gold),var(--coral))");
 
     // funnel
     const withLayout=sessions.filter(s=>s.layout_chosen).length;
@@ -1015,15 +1482,16 @@
 
     const highlights=[
       {icon:"📸",text:`<strong>${photoCount} branded photos</strong> were created and shared at this event, each carrying the OxygenBar360 brand into guests' social feeds.`},
-      rate>=70
-        ?{icon:"🔥",text:`<strong>${rate}% completion rate</strong> — guests who started the experience overwhelmingly finished and shared. That's exceptional engagement.`}
-        :{icon:"📈",text:`<strong>${rate}% completion rate.</strong> ${shared} of ${total} guests who opened the booth completed the full experience and shared.`},
-      reach>0?{icon:"👥",text:`<strong>Estimated ${fmt(reach)} social impressions</strong> generated from this single event. Each photo reached an estimated ${followers} people in guests' networks.`}:null,
-      madeAnother>0?{icon:"✦",text:`<strong>${madeAnother} guests came back for more</strong> — they tapped "Make another" and created a second photo. A clear sign the experience delighted.`}:null,
-      avgT>0?{icon:"⏱",text:`<strong>Average session: ${avgT} seconds.</strong> Guests moved through the full experience in under ${Math.ceil(avgT/60)} minute${avgT<120?"":"s"} — fast enough to serve a crowd, engaging enough to feel special.`}:null,
+      conv>=50
+        ?{icon:"🔥",text:`<strong>${conv}% of everyone who scanned</strong> went all the way through to sharing — exceptional engagement for a live activation.`}
+        :{icon:"📈",text:`<strong>${conv}% scan-to-share conversion.</strong> ${shared} of ${scans} guests who scanned completed the full experience and shared.`},
+      reach>0?{icon:"👥",text:`<strong>~${fmt(reach)} estimated social impressions</strong> generated from this single event — roughly <strong>$${Number(adValue).toLocaleString()}</strong> in equivalent ad value.`}:null,
+      engageMin>0?{icon:"⏳",text:`<strong>${engageMin} total minutes</strong> of hands-on brand engagement across all guests — face-to-face attention money can't usually buy.`}:null,
+      peakHour!==null?{icon:"📊",text:`The booth peaked around <strong>${peakLabel}</strong>, serving roughly <strong>${throughput} guests that hour</strong> — useful for planning placement and staffing next time.`}:null,
+      repeats>0?{icon:"✦",text:`<strong>${repeats} guests came back for more</strong> (${repeatRate}%) — they made a second photo. A clear sign the experience delighted.`}:null,
+      avgT>0?{icon:"⏱",text:`<strong>Average session: ${avgT} seconds.</strong> Fast enough to serve a crowd, engaging enough to feel special.`}:null,
       topLayout?{icon:"🖼",text:`<strong>${LAYOUT_NAMES[topLayout[0]]||topLayout[0]}</strong> was the most popular photo format, chosen by ${topLayout[1]} guest${topLayout[1]!==1?"s":""}.`}:null,
-      withText>0?{icon:"✍️",text:`<strong>${withText} guests added personal captions</strong>, making each photo uniquely theirs — a sign of deeper emotional investment in the experience.`}:null,
-      topEmoji&&moods[topEmoji[0]]>0?{icon:topEmoji[0],text:`The crowd's top energy signal was <strong>${topEmoji[0]}</strong> (tapped ${topEmoji[1]} times on the welcome screen) — a real-time mood reading of the night.`}:null,
+      withText>0?{icon:"✍️",text:`<strong>${withText} guests added personal captions</strong>, making each photo uniquely theirs — a sign of deeper investment in the experience.`}:null,
     ].filter(Boolean);
 
     $("#rHighlights").innerHTML=highlights.map(h=>`
@@ -1065,12 +1533,12 @@
     $("#statusMsg").style.display="block";
     $("#reportContent").style.display="none";
     try{
-      const [sessions,photos]=await Promise.all([fetchSessions(event),fetchPhotos(event)]);
-      if(!sessions.length&&!photos.length){
+      const [sessions,photos,repEvents]=await Promise.all([fetchSessions(event),fetchPhotos(event),fetchReportEvents(event)]);
+      if(!sessions.length&&!photos.length&&!repEvents.length){
         $("#statusMsg").textContent=`No data found for "${event}". Make sure the event name matches exactly what was used in the booth URL (?event=...).`;
         return;
       }
-      render(sessions,photos,cfg);
+      render(sessions,photos,cfg,repEvents);
     }catch(err){
       $("#statusMsg").textContent="Error loading data: "+err.message;
     }
