@@ -423,6 +423,39 @@
     <div style="margin-bottom:16px">
       <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event name</label>
       <input id="seName" placeholder="e.g. SummerFest 2026" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+
+      <div style="margin-top:14px">
+        <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event type</label>
+        <select id="seEventType" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 14px;-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%237df0d0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 13px center">
+          <option value="">— Select event type —</option>
+          <option value="community_festival"    data-followers="300">Community / Cultural Festival</option>
+          <option value="networking_mixer"      data-followers="800">Networking / Business Mixer (Chamber, BNI, etc.)</option>
+          <option value="corporate_event"       data-followers="500">Corporate Event</option>
+          <option value="corporate_conference"  data-followers="600">Corporate Conference</option>
+          <option value="tradeshow"             data-followers="700">Tradeshow</option>
+          <option value="brand_activation"      data-followers="1000">Brand Activation</option>
+          <option value="wedding"               data-followers="400">Wedding</option>
+          <option value="birthday_party"        data-followers="350">Birthday Party</option>
+          <option value="nonprofit_event"       data-followers="300">Non-Profit Event</option>
+        </select>
+        <div id="seFollowerHint" style="font-size:11px;color:var(--mint);margin-top:5px;min-height:16px"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+        <div>
+          <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Your fee for this event</label>
+          <div style="position:relative">
+            <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mint);font-weight:700">$</span>
+            <input id="seFee" type="number" min="0" placeholder="0" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px 12px 28px">
+          </div>
+          <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">Enter 0 for free events</div>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Avg guest followers</label>
+          <input id="seFollowers" type="number" min="1" placeholder="300" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">Auto-filled · adjust if needed</div>
+        </div>
+      </div>
     </div>
 
     <div id="seLinks" style="display:none">
@@ -935,20 +968,54 @@
 
   $("#startEventBtn").addEventListener("click",()=>{
     $("#seName").value="";
+    $("#seFee").value="";
+    $("#seFollowers").value="";
+    $("#seEventType").value="";
+    $("#seFollowerHint").textContent="";
     $("#seLinks").style.display="none";
     $("#startModalBg").classList.add("show");
     setTimeout(()=>$("#seName").focus(),100);
   });
   $("#seCancel").addEventListener("click",()=>$("#startModalBg").classList.remove("show"));
 
+  // ── event type → auto-populate followers ──
+  const EVENT_TYPE_FOLLOWERS = {
+    "community_festival":   { followers: 300,  label: "Community/festival audiences avg ~300 followers per guest" },
+    "networking_mixer":     { followers: 800,  label: "Chamber & BNI professionals avg ~800 followers — business owners are active online" },
+    "corporate_event":      { followers: 500,  label: "Corporate event guests avg ~500 followers per guest" },
+    "corporate_conference": { followers: 600,  label: "Conference attendees avg ~600 followers per guest" },
+    "tradeshow":            { followers: 700,  label: "Tradeshow professionals avg ~700 followers per guest" },
+    "brand_activation":     { followers: 1000, label: "Brand activation audiences avg ~1,000 followers per guest" },
+    "wedding":              { followers: 400,  label: "Wedding guests avg ~400 followers per guest" },
+    "birthday_party":       { followers: 350,  label: "Birthday party guests avg ~350 followers per guest" },
+    "nonprofit_event":      { followers: 300,  label: "Non-profit audiences avg ~300 followers per guest" },
+  };
+  $("#seEventType").addEventListener("change", function(){
+    const val = this.value;
+    const hint = $("#seFollowerHint");
+    if(!val){ hint.textContent=""; return; }
+    const cfg = EVENT_TYPE_FOLLOWERS[val];
+    if(cfg){
+      $("#seFollowers").value = cfg.followers;
+      hint.textContent = "✦ " + cfg.label;
+    }
+  });
+
   $("#seGenerate").addEventListener("click",()=>{
     const name=$("#seName").value.trim();
     if(!name){ alert("Give your event a name first"); return; }
     const enc=encodeURIComponent(name);
-    // build the links
+    // read fee and followers
+    const fee=parseInt($("#seFee").value)||0;
+    const followers=parseInt($("#seFollowers").value)||300;
+    const eventType=$("#seEventType").value||"";
+    // build the links — fee + followers + event type baked into client report link
     $("#seQrLink").textContent   = BOOTH_URL+"/?event="+enc+"&src=qr";
     $("#seNfcLink").textContent  = BOOTH_URL+"/?event="+enc+"&src=nfc";
-    $("#seReportLink").textContent = DASHBOARD_URL+"?event="+enc+"&report=1";
+    let reportLink = DASHBOARD_URL+"?event="+enc+"&report=1&followers="+followers;
+    if(fee>0) reportLink += "&fee="+fee;
+    if(eventType) reportLink += "&etype="+encodeURIComponent(eventType);
+    $("#seReportLink").textContent = reportLink;
     $("#seLinks").style.display="block";
     // set as active event in the dashboard dropdown
     const sel=$("#eventSelect");
