@@ -130,6 +130,13 @@
   .modal button{font-family:inherit;font-size:14px;border-radius:10px;padding:11px 20px;cursor:pointer;border:none;font-weight:600}
   .modal .cancel{background:var(--glass);color:var(--ink);border:1px solid var(--stroke-2)}
   .modal .confirm{background:linear-gradient(120deg,var(--coral),var(--gold));color:#3a1208}
+  /* start event link rows */
+  .se-link-row{margin-bottom:12px}
+  .se-link-label{font-size:12px;color:var(--ink-soft);font-weight:600;margin-bottom:5px}
+  .se-link-box{display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--stroke-2);border-radius:10px;padding:4px 4px 4px 12px}
+  .se-link-box code{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .se-copy{background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b;border:none;border-radius:8px;padding:7px 14px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0}
+  .se-copy.copied{background:var(--lime)}
 
   @media(max-width:1000px){
     .hero-strip{grid-template-columns:1fr 1fr}
@@ -142,6 +149,13 @@
   #reportView{display:none}
   body.report-mode #dashboardView{display:none}
   body.report-mode #reportView{display:block}
+  /* CLIENT MODE: hide all the editing controls, keep just a clean print bar */
+  body.client-mode .tb-group,
+  body.client-mode .tb-divider,
+  body.client-mode #loadBtn,
+  body.client-mode #backToDash{display:none!important}
+  body.client-mode .toolbar{justify-content:flex-end;background:transparent;border-bottom:none;position:static}
+  body.client-mode .toolbar h2{margin-right:auto}
   .view-switch-btn{background:linear-gradient(120deg,var(--gold),var(--coral))!important;color:#3a1208!important;border:none!important;font-weight:700!important}
   .back-to-dash{background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:13px;border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600}
 
@@ -211,6 +225,7 @@
     <div class="controls">
       <span class="live-pill"><span class="rd"></span><span id="liveNow">0</span> active now</span>
       <select id="eventSelect"><option>All Events</option></select>
+      <button class="primary" id="startEventBtn">✦ Start Event</button>
       <button id="refreshBtn">↻ Refresh</button>
       <button class="view-switch-btn" id="toReportBtn">📄 Generate Report</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
@@ -299,6 +314,41 @@
     <div class="mbtns">
       <button class="cancel" id="modalCancel">Cancel</button>
       <button class="confirm" id="modalConfirm">Archive & Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- START EVENT modal -->
+<div class="modal-bg" id="startModalBg">
+  <div class="modal" style="max-width:520px">
+    <h3>✦ Start a New Event</h3>
+    <p>Name your event, then use the generated links for your QR codes and NFC chips. Every scan will be tagged to this event automatically.</p>
+
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event name</label>
+      <input id="seName" placeholder="e.g. SummerFest 2026" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+    </div>
+
+    <div id="seLinks" style="display:none">
+      <div style="font-size:12px;color:var(--ink-faint);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:10px">Your links — point QR codes & NFC chips here</div>
+
+      <div class="se-link-row">
+        <div class="se-link-label">📱 QR Code link</div>
+        <div class="se-link-box"><code id="seQrLink"></code><button class="se-copy" data-copy="seQrLink">Copy</button></div>
+      </div>
+      <div class="se-link-row">
+        <div class="se-link-label">📲 NFC Chip link</div>
+        <div class="se-link-box"><code id="seNfcLink"></code><button class="se-copy" data-copy="seNfcLink">Copy</button></div>
+      </div>
+      <div class="se-link-row">
+        <div class="se-link-label">📄 Client report link</div>
+        <div class="se-link-box"><code id="seReportLink"></code><button class="se-copy" data-copy="seReportLink">Copy</button></div>
+      </div>
+    </div>
+
+    <div class="mbtns" style="margin-top:20px">
+      <button class="cancel" id="seCancel">Close</button>
+      <button class="confirm" id="seGenerate" style="background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b">Generate Links &amp; Start</button>
     </div>
   </div>
 </div>
@@ -716,6 +766,57 @@
   });
 
   $("#refreshBtn").addEventListener("click",loadAll);
+
+  // ===== START EVENT =====
+  // your live booth URL — change here if your booth ever moves
+  const BOOTH_URL = "https://photoboothapp-rwzs.vercel.app";
+  const DASHBOARD_URL = location.origin + location.pathname;
+
+  $("#startEventBtn").addEventListener("click",()=>{
+    $("#seName").value="";
+    $("#seLinks").style.display="none";
+    $("#startModalBg").classList.add("show");
+    setTimeout(()=>$("#seName").focus(),100);
+  });
+  $("#seCancel").addEventListener("click",()=>$("#startModalBg").classList.remove("show"));
+
+  $("#seGenerate").addEventListener("click",()=>{
+    const name=$("#seName").value.trim();
+    if(!name){ alert("Give your event a name first"); return; }
+    const enc=encodeURIComponent(name);
+    // build the links
+    $("#seQrLink").textContent   = BOOTH_URL+"/?event="+enc+"&src=qr";
+    $("#seNfcLink").textContent  = BOOTH_URL+"/?event="+enc+"&src=nfc";
+    $("#seReportLink").textContent = DASHBOARD_URL+"?event="+enc+"&report=1";
+    $("#seLinks").style.display="block";
+    // set as active event in the dashboard dropdown
+    const sel=$("#eventSelect");
+    if(![...sel.options].some(o=>o.value===name||o.textContent===name)){
+      const o=document.createElement("option"); o.value=name; o.textContent=name; sel.appendChild(o);
+    }
+    sel.value=name;
+    loadAll();
+    // change button to a done state
+    $("#seGenerate").textContent="✓ Event Started";
+    $("#seGenerate").style.background="var(--lime)";
+    setTimeout(()=>{ $("#seGenerate").textContent="Generate Links & Start"; $("#seGenerate").style.background="linear-gradient(120deg,var(--mint),var(--aqua))"; },2000);
+  });
+
+  // copy buttons
+  document.addEventListener("click",e=>{
+    const btn=e.target.closest(".se-copy"); if(!btn) return;
+    const txt=document.getElementById(btn.dataset.copy).textContent;
+    navigator.clipboard.writeText(txt).then(()=>{
+      const orig=btn.textContent; btn.textContent="✓ Copied"; btn.classList.add("copied");
+      setTimeout(()=>{ btn.textContent=orig; btn.classList.remove("copied"); },1500);
+    }).catch(()=>{
+      // fallback for older browsers
+      const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+      try{document.execCommand("copy");}catch(_){}
+      document.body.removeChild(ta);
+      btn.textContent="✓ Copied"; setTimeout(()=>btn.textContent="Copy",1500);
+    });
+  });
   $("#eventSelect").addEventListener("change",loadAll);
   $("#recalcBtn").addEventListener("click",()=>{
     followers=parseInt($("#followerInput").value)||300;
@@ -780,6 +881,9 @@
   if(q.get("date")) $("#tbDate").value=q.get("date");
   if(q.get("venue")) $("#tbVenue").value=q.get("venue");
   if(q.get("fee")) $("#tbFee").value=q.get("fee");
+  if(q.get("followers")) $("#tbFollowers").value=q.get("followers");
+  // ensure followers always has a value so ROI renders (default 300)
+  if(!$("#tbFollowers").value) $("#tbFollowers").value="300";
 
   async function fetchSessions(event){
     const url=SUPA_URL+"/rest/v1/booth_sessions?event_name=eq."+encodeURIComponent(event)+"&select=*&limit=5000";
@@ -993,6 +1097,27 @@
   // refresh the dropdown each time the report view is opened
   const _toRptBtn=document.getElementById("toReportBtn");
   if(_toRptBtn) _toRptBtn.addEventListener("click",()=>setTimeout(fillReportEvents,200));
+
+  // ── CLIENT MODE: ?report=1 opens straight into the clean report view ──
+  // Example client link:  ...vercel.app/?event=SummerFest&report=1
+  if(q.get("report")==="1" || q.get("report")==="true"){
+    document.body.classList.add("report-mode","client-mode");
+    // hide the "Back to Dashboard" button so clients stay on the report
+    const back=document.getElementById("backToDash");
+    if(back) back.style.display="none";
+    // set + load the event from the URL
+    if(q.get("event")){
+      setTimeout(()=>{
+        const sel=$("#tbEvent");
+        const target=q.get("event");
+        if(![...sel.options].some(o=>o.value===target)){
+          const o=document.createElement("option"); o.value=target; o.textContent=target; sel.appendChild(o);
+        }
+        sel.value=target;
+        $("#loadBtn").click();
+      }, 500);
+    }
+  }
 })();
 </script>
 </body>
