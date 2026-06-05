@@ -592,7 +592,7 @@
           <div class="roi-item"><div class="rv" id="repPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
           <div class="roi-item"><div class="rv" id="repReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
           <div class="roi-item"><div class="rv" id="repAdValue">—</div><div class="rl">Equivalent ad spend to reach the same audience*</div></div>
-          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl">Your effective cost per branded impression</div></div>
+          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl"><b>Estimated brand exposure</b> — based on what you already invested in the event, the marketing exposure created from branded guest photos shared after the activation</div></div>
         </div>
         <div class="roi-note" id="roiNote"></div>
       </div>
@@ -1551,7 +1551,9 @@
     const durs=sessions.filter(s=>s.share_completed&&s.session_duration_seconds>0).map(s=>s.session_duration_seconds);
     const avgT=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
     const reach=photoCount*followers;
-    const cpi=reach&&fee?("$"+(fee/reach).toFixed(3)):"—";
+    // exposure per dollar invested (positive framing — not a "cost")
+    const perDollar=(fee>0&&reach)?Math.round(reach/fee):0;
+    const cpi=perDollar?("~"+fmt(perDollar)+" / $1"):"—";
 
     // ── NEW ORGANIZER STATS ──
     // Total scans: prefer Scan events, fall back to Session Started, else photos count
@@ -1615,7 +1617,7 @@
     $("#repCPI").textContent=cpi;
     $("#roiNote").textContent=`Based on ${photoCount} branded photos × ~${followers} followers per guest = ${fmt(reach)} estimated impressions. `
       +`*Equivalent ad spend estimated at a $${CPM} CPM (industry-standard cost per 1,000 social impressions).`
-      +(fee?` Against a $${Number(fee).toLocaleString()} investment, that's $${reach?(fee/reach).toFixed(3):"—"} per impression.`:"");
+      +(fee?` Your $${Number(fee).toLocaleString()} event investment generated ~${reach?fmt(Math.round(reach/Math.max(fee,1))):"—"} branded impressions for every $1 spent.`:"");
 
     // PEAK ACTIVITY timeline (hour bars)
     const hourBars={};
