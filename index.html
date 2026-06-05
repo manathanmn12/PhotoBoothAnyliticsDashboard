@@ -38,7 +38,7 @@
     transition:border-color .2s,box-shadow .2s}
   .controls select:hover{border-color:var(--mint)}
   .controls select:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 3px rgba(125,240,208,.15)}
-  .controls select option{background:#0a2330;color:var(--ink)}
+  select option{background:#0a2330;color:var(--ink)} /* themed dropdown lists everywhere (header, start-event modal, report toolbar) */
   .controls button.primary{background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b;font-weight:700;border:none}
   .controls button.danger{background:rgba(255,125,107,.14);border-color:rgba(255,125,107,.4);color:var(--coral);font-weight:600}
   .live-pill{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);background:var(--glass);border:1px solid var(--stroke);border-radius:99px;padding:7px 13px}
@@ -436,6 +436,7 @@
           <option value="brand_activation"      data-followers="1000">Brand Activation</option>
           <option value="wedding"               data-followers="400">Wedding</option>
           <option value="birthday_party"        data-followers="350">Birthday Party</option>
+          <option value="graduation"            data-followers="350">Graduation</option>
           <option value="nonprofit_event"       data-followers="300">Non-Profit Event</option>
         </select>
         <div id="seFollowerHint" style="font-size:11px;color:var(--mint);margin-top:5px;min-height:16px"></div>
@@ -941,13 +942,28 @@
   $("#refreshBtn").addEventListener("click",loadAll);
 
   // ===== COPY CLIENT REPORT LINK (dashboard header) =====
-  $("#copyClientLinkBtn").addEventListener("click",()=>{
+  // pulls the event's saved fee/followers/type from event_archive so the link carries them
+  async function eventMeta(ev){
+    if(!SUPA_READY) return {};
+    try{
+      const rows=await sb("event_archive?event_name=eq."+encodeURIComponent(ev)+"&select=summary,archived_at&order=archived_at.desc&limit=20");
+      return ((rows||[]).find(r=>r.summary&&(r.summary.fee||r.summary.followers||r.summary.etype))||{}).summary||{};
+    }catch(_){ return {}; }
+  }
+  function metaParams(m){
+    let s="";
+    if(m.followers) s+="&followers="+m.followers;
+    if(m.fee) s+="&fee="+m.fee;
+    if(m.etype) s+="&etype="+encodeURIComponent(m.etype);
+    return s;
+  }
+  $("#copyClientLinkBtn").addEventListener("click",async()=>{
     const ev=$("#eventSelect").value;
     if(!ev||ev==="All Events"){
       alert("Pick a specific event from the dropdown first, then copy its client report link.");
       return;
     }
-    const link=location.origin+location.pathname+"?event="+encodeURIComponent(ev)+"&report=1";
+    const link=location.origin+location.pathname+"?event="+encodeURIComponent(ev)+"&report=1"+metaParams(await eventMeta(ev));
     const btn=$("#copyClientLinkBtn");
     navigator.clipboard.writeText(link).then(()=>{
       const orig=btn.textContent; btn.textContent="✓ Link Copied!";
@@ -988,6 +1004,7 @@
     "brand_activation":     { followers: 1000, label: "Brand activation audiences avg ~1,000 followers per guest" },
     "wedding":              { followers: 400,  label: "Wedding guests avg ~400 followers per guest" },
     "birthday_party":       { followers: 350,  label: "Birthday party guests avg ~350 followers per guest" },
+    "graduation":           { followers: 350,  label: "Graduation crowds avg ~350 followers — grads & family share heavily" },
     "nonprofit_event":      { followers: 300,  label: "Non-profit audiences avg ~300 followers per guest" },
   };
   $("#seEventType").addEventListener("change", function(){
@@ -1029,7 +1046,7 @@
       fetch(SUPA_URL+"/rest/v1/event_archive",{
         method:"POST",
         headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},
-        body:JSON.stringify({event_name:name,archived_at:new Date().toISOString(),summary:{active:true}})
+        body:JSON.stringify({event_name:name,archived_at:new Date().toISOString(),summary:{active:true,fee:fee,followers:followers,etype:eventType}})
       }).catch(()=>{});
     }
     loadAll();
@@ -1083,17 +1100,24 @@
     const totals=document.getElementById('histTotals');
     body.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--ink-faint);padding:30px">Loading…</td></tr>';
 
-    let events=[], sessions=[];
+    let events=[], sessions=[], archive=[];
     let fetchedFromSupabase=false;
     if(SUPA_READY){
       try{
-        [events,sessions]=await Promise.all([
+        [events,sessions,archive]=await Promise.all([
           sb("booth_events?select=*&limit=20000"),
-          sb("booth_sessions?select=*&limit=20000")
+          sb("booth_sessions?select=*&limit=20000"),
+          sb("event_archive?select=event_name,summary,archived_at&order=archived_at.desc&limit=10000").catch(()=>[])
         ]);
         fetchedFromSupabase=true;  // we reached Supabase — don't fall to demo
       }catch(_){}
     }
+    // per-event saved meta (fee / followers / etype) — newest archive row wins
+    const metaByEvent={};
+    (archive||[]).forEach(a=>{
+      const s=a.summary||{};
+      if(!metaByEvent[a.event_name]&&(s.fee||s.followers||s.etype)) metaByEvent[a.event_name]=s;
+    });
     // demo fallback ONLY if not connected to Supabase at all
     if(!fetchedFromSupabase && !events.length){
       // synthesize a couple of past events for preview
@@ -1131,8 +1155,15 @@
       const captured=uniq("Photo Captured");
       const shared=uniq("Photo Shared");
       const conv=scans?Math.round(shared/scans*100):0;
-      const reach=shared*followers;
+      const meta=metaByEvent[nm]||{};
+      const evFollowers=parseInt(meta.followers)||followers;
+      const evFee=parseFloat(meta.fee)||0;
+      const reach=shared*evFollowers;
       const adValue=Math.round(reach/1000*10); // $10 CPM
+      // client report link carries the event's saved fee/followers/type
+      let repHref="?event="+encodeURIComponent(nm)+"&report=1&followers="+evFollowers;
+      if(evFee>0) repHref+="&fee="+evFee;
+      if(meta.etype) repHref+="&etype="+encodeURIComponent(meta.etype);
       const evSessions=sessions.filter(s=>s.event_name===nm);
       const sharedSessions=evSessions.filter(s=>s.share_completed&&s.session_duration_seconds>0);
       const avgT=sharedSessions.length?Math.round(sharedSessions.reduce((a,b)=>a+b.session_duration_seconds,0)/sharedSessions.length):0;
@@ -1156,7 +1187,7 @@
       const dates=evEvents.map(e=>new Date(e.created_at)).sort((a,b)=>a-b);
       const date=dates.length?dates[0].toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):"—";
       const sortTs=dates.length?dates[0].getTime():0;
-      return {nm,date,sortTs,scans,started,engaged,pickedLayout,captured,shared,conv,reach,adValue,avgT,totalMin,repeats,repeatRate,qr,nfc,peakLabel,
+      return {nm,date,sortTs,scans,started,engaged,pickedLayout,captured,shared,conv,reach,adValue,avgT,totalMin,repeats,repeatRate,qr,nfc,peakLabel,repHref,
         topLayout:topLayout?(LAYOUT_NAMES[topLayout[0]]||topLayout[0]):"—",
         topTheme:topTheme?(THEME_NAMES[topTheme[0]]||topTheme[0]):"—"};
     }).sort((a,b)=>b.sortTs-a.sortTs);  // newest first
@@ -1209,7 +1240,7 @@
               </div>
             </div>
             <div class="exp-actions">
-              <a class="exp-link" href="?event=${encodeURIComponent(r.nm)}&report=1" target="_blank">📄 Open client report ↗</a>
+              <a class="exp-link" href="${r.repHref}" target="_blank">📄 Open client report ↗</a>
               <div class="exp-del-group">
                 <button class="exp-hide" data-hide="${r.nm.replace(/"/g,'&quot;')}">Hide from history</button>
                 <button class="exp-delete" data-del="${r.nm.replace(/"/g,'&quot;')}">🗑 Permanently delete</button>
@@ -1447,6 +1478,19 @@
   // ensure followers always has a value so ROI renders (default 300)
   if(!$("#tbFollowers").value) $("#tbFollowers").value="300";
 
+  // ── fallback: pull the event's saved fee/followers from event_archive when the URL/toolbar doesn't have them ──
+  async function fillMetaFromArchive(ev){
+    if(!ev||!SUPA_URL||!SUPA_KEY) return;
+    try{
+      const r=await fetch(SUPA_URL+"/rest/v1/event_archive?event_name=eq."+encodeURIComponent(ev)+"&select=summary,archived_at&order=archived_at.desc&limit=20",
+        {headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
+      const rows=await r.json();
+      const m=((rows||[]).find(x=>x.summary&&(x.summary.fee||x.summary.followers))||{}).summary||{};
+      if(m.fee&&!parseFloat($("#tbFee").value)&&!q.get("fee")) $("#tbFee").value=m.fee;
+      if(m.followers&&!q.get("followers")&&(!$("#tbFollowers").value||$("#tbFollowers").value==="300")) $("#tbFollowers").value=m.followers;
+    }catch(_){}
+  }
+
   async function fetchSessions(event){
     const url=SUPA_URL+"/rest/v1/booth_sessions?event_name=eq."+encodeURIComponent(event)+"&select=*&limit=5000";
     const r=await fetch(url,{headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
@@ -1659,6 +1703,8 @@
   $("#loadBtn").addEventListener("click",async()=>{
     const event=$("#tbEvent").value.trim();
     if(!event){alert("Enter an event name first");return;}
+    // no fee in the toolbar? check the database for this event's saved fee/followers
+    if(!parseFloat($("#tbFee").value)) await fillMetaFromArchive(event);
     const fee=parseFloat($("#tbFee").value)||0;
     const followers=parseInt($("#tbFollowers").value)||300;
     const cfg={
