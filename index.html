@@ -588,11 +588,10 @@
       <div class="section-title">Reach &amp; Media Value</div>
       <div class="section-sub">WHAT THIS ACTIVATION GENERATED FOR YOUR BRAND</div>
       <div class="roi-box">
-        <div class="roi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="roi-grid" style="grid-template-columns:repeat(3,1fr)">
           <div class="roi-item"><div class="rv" id="repPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
           <div class="roi-item"><div class="rv" id="repReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
-          <div class="roi-item"><div class="rv" id="repAdValue">—</div><div class="rl">Equivalent ad spend to reach the same audience*</div></div>
-          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl"><b>Estimated brand exposure</b> — based on what you already invested in the event, the marketing exposure created from branded guest photos shared after the activation</div></div>
+          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl"><b>Estimated brand exposure</b> — based on what you already invested in the event, the estimated marketing exposure created from branded guest photos shared after the activation*</div></div>
         </div>
         <div class="roi-note" id="roiNote"></div>
       </div>
@@ -1551,9 +1550,6 @@
     const durs=sessions.filter(s=>s.share_completed&&s.session_duration_seconds>0).map(s=>s.session_duration_seconds);
     const avgT=durs.length?Math.round(durs.reduce((a,b)=>a+b,0)/durs.length):0;
     const reach=photoCount*followers;
-    // exposure per dollar invested (positive framing — not a "cost")
-    const perDollar=(fee>0&&reach)?Math.round(reach/fee):0;
-    const cpi=perDollar?("~"+fmt(perDollar)+" / $1"):"—";
 
     // ── NEW ORGANIZER STATS ──
     // Total scans: prefer Scan events, fall back to Session Started, else photos count
@@ -1579,9 +1575,10 @@
     Object.entries(hourCounts).forEach(([h,c])=>{ if(c>peakCount){peakCount=c;peakHour=+h;} });
     const peakLabel = peakHour!==null ? ((peakHour%12||12)+(peakHour<12?" AM":" PM")) : "—";
     const throughput = peakCount || (avgT?Math.round(3600/Math.max(avgT,1)):0);
-    // Ad value equivalent: reach impressions at a typical $10 CPM (cost per 1000 impressions)
-    const CPM = 10;
-    const adValue = Math.round(reach/1000*CPM);
+    // Earned media value: branded photos shared by real people are earned/UGC media,
+    // valued at $80 per 1,000 impressions (conservative end of the $50–$250 industry benchmark)
+    const EMV_RATE = 80;
+    const adValue = Math.round(reach/1000*EMV_RATE); // earned media value in $
 
     // cover meta
     let meta=`<span>Event:</span> ${event}`;
@@ -1610,14 +1607,14 @@
     $("#rRepeat").textContent=repeatRate+"%";
     $("#rPeakHour").textContent=peakLabel;
 
-    // ROI + ad value
+    // ROI + earned media value
     $("#repPhotos").textContent=photoCount;
     $("#repReach").textContent=fmt(reach);
-    $("#repAdValue").textContent="$"+Number(adValue).toLocaleString();
-    $("#repCPI").textContent=cpi;
+    $("#repCPI").textContent=adValue?("$"+Number(adValue).toLocaleString()):"—";
+    const roiRatio=(fee>0&&adValue)?(adValue/fee):0;
     $("#roiNote").textContent=`Based on ${photoCount} branded photos × ~${followers} followers per guest = ${fmt(reach)} estimated impressions. `
-      +`*Equivalent ad spend estimated at a $${CPM} CPM (industry-standard cost per 1,000 social impressions).`
-      +(fee?` Your $${Number(fee).toLocaleString()} event investment generated ~${reach?fmt(Math.round(reach/Math.max(fee,1))):"—"} branded impressions for every $1 spent.`:"");
+      +`*Valued at $${EMV_RATE} per 1,000 impressions — the conservative end of industry benchmarks for earned/user-generated social content, which carries far more trust than paid ads.`
+      +(fee?` Your $${Number(fee).toLocaleString()} event investment created an estimated $${Number(adValue).toLocaleString()} in earned brand exposure${roiRatio>=1.1?` — ${roiRatio.toFixed(1)}× what you put in`:""}.`:"");
 
     // PEAK ACTIVITY timeline (hour bars)
     const hourBars={};
@@ -1669,7 +1666,7 @@
       conv>=50
         ?{icon:"🔥",text:`<strong>${conv}% of everyone who scanned</strong> went all the way through to sharing — exceptional engagement for a live activation.`}
         :{icon:"📈",text:`<strong>${conv}% scan-to-share conversion.</strong> ${shared} of ${scans} guests who scanned completed the full experience and shared.`},
-      reach>0?{icon:"👥",text:`<strong>~${fmt(reach)} estimated social impressions</strong> generated from this single event — roughly <strong>$${Number(adValue).toLocaleString()}</strong> in equivalent ad value.`}:null,
+      reach>0?{icon:"👥",text:`<strong>~${fmt(reach)} estimated social impressions</strong> generated from this single event — an estimated <strong>$${Number(adValue).toLocaleString()}</strong> in earned media value.`}:null,
       engageMin>0?{icon:"⏳",text:`<strong>${engageMin} total minutes</strong> of hands-on brand engagement across all guests — face-to-face attention money can't usually buy.`}:null,
       peakHour!==null?{icon:"📊",text:`The booth peaked around <strong>${peakLabel}</strong>, serving roughly <strong>${throughput} guests that hour</strong> — useful for planning placement and staffing next time.`}:null,
       repeats>0?{icon:"✦",text:`<strong>${repeats} guests came back for more</strong> (${repeatRate}%) — they made a second photo. A clear sign the experience delighted.`}:null,
