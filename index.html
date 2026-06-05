@@ -573,7 +573,7 @@
         <div class="kpi a2"><div class="kl">Total Scans</div><div class="kv" id="rScans">—</div><div class="ks">guests who engaged the booth</div></div>
         <div class="kpi a1"><div class="kl">Photos Shared</div><div class="kv" id="rShares">—</div><div class="ks" id="rSharesSub">completed &amp; shared</div></div>
         <div class="kpi a5"><div class="kl">Scan → Share</div><div class="kv" id="rConv">—</div><div class="ks">overall conversion</div></div>
-        <div class="kpi a4"><div class="kl">Avg Session Time</div><div class="kv" id="rTime">—</div><div class="ks">open to share</div></div>
+        <div class="kpi a4"><div class="kl">Avg Session Time</div><div class="kv" id="rTime" style="font-size:28px">—</div><div class="ks">open to share</div></div>
       </div>
       <div class="kpi-row" style="margin-top:14px">
         <div class="kpi a3"><div class="kl">Total Engagement</div><div class="kv" id="rEngageMin">—</div><div class="ks">minutes guests spent with your brand</div></div>
@@ -1511,6 +1511,7 @@
   function countBy(arr,key){const o={};arr.forEach(s=>{const v=s[key];if(v)o[v]=(o[v]||0)+1;});return o;}
   function fmt(n){return n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"K":""+n;}
   function pct(a,b){return b?Math.round(a/b*100)+"%":"—";}
+  function minSec(s){const m=Math.floor(s/60),r=Math.round(s%60);return m+"m"+(r?" "+r+"s":"");}
 
   function bars(sel,obj,names,accent){
     const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
@@ -1600,7 +1601,7 @@
     $("#rShares").textContent=shared;
     $("#rSharesSub").textContent=shared+" of "+scans+" scans";
     $("#rConv").textContent=conv+"%";
-    $("#rTime").textContent=avgT?"~"+avgT+"s":"—";
+    $("#rTime").textContent=avgT?(avgT>=60?"~"+avgT+"s ("+minSec(avgT)+")":"~"+avgT+"s"):"—";
     // KPIs (row 2)
     $("#rEngageMin").textContent=engageMin||"—";
     $("#rThroughput").textContent=throughput?"~"+throughput:"—";
@@ -1670,7 +1671,7 @@
       engageMin>0?{icon:"⏳",text:`<strong>${engageMin} total minutes</strong> of hands-on brand engagement across all guests — face-to-face attention money can't usually buy.`}:null,
       peakHour!==null?{icon:"📊",text:`The booth peaked around <strong>${peakLabel}</strong>, serving roughly <strong>${throughput} guests that hour</strong> — useful for planning placement and staffing next time.`}:null,
       repeats>0?{icon:"✦",text:`<strong>${repeats} guests came back for more</strong> (${repeatRate}%) — they made a second photo. A clear sign the experience delighted.`}:null,
-      avgT>0?{icon:"⏱",text:`<strong>Average session: ${avgT} seconds.</strong> Fast enough to serve a crowd, engaging enough to feel special.`}:null,
+      avgT>0?{icon:"⏱",text:`<strong>Average session: ${avgT} seconds${avgT>=60?" ("+minSec(avgT)+")":""}.</strong> Fast enough to serve a crowd, engaging enough to feel special.`}:null,
       topLayout?{icon:"🖼",text:`<strong>${LAYOUT_NAMES[topLayout[0]]||topLayout[0]}</strong> was the most popular photo format, chosen by ${topLayout[1]} guest${topLayout[1]!==1?"s":""}.`}:null,
       withText>0?{icon:"✍️",text:`<strong>${withText} guests added personal captions</strong>, making each photo uniquely theirs — a sign of deeper investment in the experience.`}:null,
     ].filter(Boolean);
