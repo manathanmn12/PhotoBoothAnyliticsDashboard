@@ -867,7 +867,7 @@
     barsRaw("#engageBars",[
       {l:"Added stickers",v:sessions.filter(s=>s.stickers_added>0).length,max:total},
       {l:"Added text",v:sessions.filter(s=>s.text_added).length,max:total},
-      {l:"Made another",v:sessions.filter(s=>s.made_another).length,max:total},
+      {l:"Made another",v:sessions.filter(s=>s.made_another||(s.photos_made||0)>1).length,max:total},
     ],"linear-gradient(90deg,var(--lime),var(--mint))");
 
     // MOOD
@@ -1167,7 +1167,7 @@
       const sharedSessions=evSessions.filter(s=>s.share_completed&&s.session_duration_seconds>0);
       const avgT=sharedSessions.length?Math.round(sharedSessions.reduce((a,b)=>a+b.session_duration_seconds,0)/sharedSessions.length):0;
       const totalMin=Math.round(sharedSessions.reduce((a,b)=>a+b.session_duration_seconds,0)/60);
-      const repeats=evSessions.filter(s=>s.made_another).length;
+      const repeats=evSessions.filter(s=>s.made_another||(s.photos_made||0)>1).length;
       const repeatRate=evSessions.length?Math.round(repeats/evSessions.length*100):0;
       // QR vs NFC from entry events
       const entryEv=evEvents.filter(e=>e.event_name==="Scan").length?evEvents.filter(e=>e.event_name==="Scan"):evEvents.filter(e=>e.event_name==="Session Started");
@@ -1560,8 +1560,8 @@
     // Total engagement minutes (sum of all completed session durations)
     const totalSec = durs.reduce((a,b)=>a+b,0);
     const engageMin = Math.round(totalSec/60);
-    // Repeat rate
-    const repeats = sessions.filter(s=>s.made_another).length;
+    // Repeat rate (boolean flag OR photos_made counter — booth writes both)
+    const repeats = sessions.filter(s=>s.made_another||(s.photos_made||0)>1).length;
     const repeatRate = total?Math.round(repeats/total*100):0;
     // Peak hour + throughput — from events (entry events) or photos as fallback
     const entryForHours = repEvents.filter(e=>e.event_name==="Scan").length
