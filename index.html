@@ -1796,14 +1796,18 @@
       $("#rPhotosSection").style.display="none";
     }
 
-    // update URL so it's shareable
-    const params=new URLSearchParams();
-    params.set("event",event);
-    if(client) params.set("client",client);
-    if(date) params.set("date",date);
-    if(venue) params.set("venue",venue);
-    if(fee) params.set("fee",fee);
-    history.replaceState(null,"","?"+params.toString());
+    // update URL so it's shareable — but NEVER for a client view. Rewriting it would
+    // strip ?report=1, so a client refresh would drop them onto the full operator
+    // dashboard (all events). Client links must stay exactly as sent.
+    if(!document.body.classList.contains("client-mode")){
+      const params=new URLSearchParams();
+      params.set("event",event);
+      if(client) params.set("client",client);
+      if(date) params.set("date",date);
+      if(venue) params.set("venue",venue);
+      if(fee) params.set("fee",fee);
+      history.replaceState(null,"","?"+params.toString());
+    }
   }
 
   $("#loadBtn").addEventListener("click",async()=>{
