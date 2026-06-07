@@ -490,6 +490,10 @@
         <div class="se-link-label">🎁 Post-event recap link <span style="opacity:.55">· gift card + photos + review (NFC chip + email)</span></div>
         <div class="se-link-box"><code id="seRecapLink"></code><button class="se-copy" data-copy="seRecapLink">Copy</button></div>
       </div>
+      <div class="se-link-row">
+        <div class="se-link-label">⭐ Google review link</div>
+        <div class="se-link-box"><code id="seReviewLink"></code><button class="se-copy" data-copy="seReviewLink">Copy</button></div>
+      </div>
     </div>
 
     <div class="mbtns" style="margin-top:20px">
@@ -1074,6 +1078,7 @@
       ["📄 Client report link",   DASHBOARD_URL+"?event="+enc+"&report=1"+metaParams(meta)],
       ["🎁 Post-event recap link",RECAP_BASE+"?"+rp.toString()],
       ["🖼️ Photo gallery link",   RECAP_GALLERY+"?event="+enc],
+      ["⭐ Google review link",    REVIEW_URL],
     ];
     const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     $("#lmEvent").textContent=ev;
@@ -1092,6 +1097,7 @@
   // OB360 post-event recap hub (gift card + photos + breathing reset + review)
   const RECAP_BASE = "https://ob360-recap.vercel.app/";
   const RECAP_GALLERY = "https://photoboothapp-rwzs.vercel.app/library.html";
+  const REVIEW_URL = "https://g.page/r/Cao0DpCkO1JKEAE/review";
 
   $("#startEventBtn").addEventListener("click",()=>{
     $("#seName").value="";
@@ -1162,6 +1168,7 @@
     rp.set("dt",dtDisp); rp.set("code",ffCode); rp.set("exp",expDisp);
     rp.set("gal",RECAP_GALLERY+"?event="+enc);
     $("#seRecapLink").textContent = RECAP_BASE+"?"+rp.toString();
+    $("#seReviewLink").textContent = REVIEW_URL;
     $("#seLinks").style.display="block";
     // set as active event in the dashboard dropdown
     const sel=$("#eventSelect");
