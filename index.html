@@ -693,6 +693,9 @@
   const SUPA_URL="https://vylxwrvxmozxvbctrhll.supabase.co";
   const SUPA_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5bHh3cnZ4bW96eHZiY3RyaGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzA0NDYsImV4cCI6MjA5NjEwNjQ0Nn0.DUwRPoMoKhnOQpnv8p52fHlIBxodTyWUsWtrJf5_3xc";
   const SUPA_READY=SUPA_URL&&SUPA_KEY;
+  // Client report view (?report=1): a client should only ever see THEIR event.
+  // Used to skip loading the operator dashboard + every event's data.
+  const CLIENT_VIEW=(()=>{ try{ const r=new URLSearchParams(location.search).get("report"); return r==="1"||r==="true"; }catch(_){ return false; } })();
 
   const LAYOUT_NAMES={single:"Single",duo:"Before/After",triple:"Filmstrip",quad:"Collage"};
   const THEME_NAMES={clean:"Clean",calm:"Calm",glow:"Glow",fresh:"Fresh",party:"Party",film:"Film",mono:"Mono"};
@@ -1174,7 +1177,7 @@
     loadAll();
   });
 
-  loadEvents();
+  if(!CLIENT_VIEW) loadEvents();
   // ===== EVENT HISTORY =====
   (function(){
     const toHist=document.getElementById('toHistoryBtn');
@@ -1515,8 +1518,8 @@
 
 
 
-  loadAll();
-  setInterval(loadAll,30000);
+  // In a client report view, don't load (or poll) the whole operator dashboard / all-events data.
+  if(!CLIENT_VIEW){ loadAll(); setInterval(loadAll,30000); }
 })();
 
 
