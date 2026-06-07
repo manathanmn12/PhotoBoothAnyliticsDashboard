@@ -295,7 +295,7 @@
       <button id="refreshBtn">↻ Refresh</button>
       <button class="view-switch-btn" id="toReportBtn">📄 Generate Report</button>
       <button id="copyClientLinkBtn">🔗 Copy Client Link</button>
-      <button id="copyRecapLinkBtn">🎁 Copy Recap Link</button>
+      <button id="copyRecapLinkBtn">🔗 Event Links</button>
       <button id="toHistoryBtn">📚 History</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
@@ -507,6 +507,19 @@
     <div class="mbtns">
       <button class="cancel" id="histDelCancel">Cancel</button>
       <button class="confirm" id="histDelConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALL EVENT LINKS modal -->
+<div class="modal-bg" id="linksModalBg">
+  <div class="modal" style="max-width:660px">
+    <h3>🔗 All links for <span id="lmEvent" style="color:var(--mint)"></span></h3>
+    <p>Everything for this event in one place — booth QR &amp; NFC, the client report, the post-event recap, and the photo gallery. Copy them individually or all at once.</p>
+    <div id="lmRows" style="max-height:46vh;overflow:auto;margin-top:6px"></div>
+    <div class="mbtns" style="margin-top:18px">
+      <button class="cancel" id="lmClose">Close</button>
+      <button class="confirm" id="lmCopyAll" style="background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b">Copy All</button>
     </div>
   </div>
 </div>
@@ -1010,11 +1023,11 @@
     });
   });
 
-  // ===== COPY POST-EVENT RECAP LINK (works on ANY selected event, including ones already run) =====
+  // ===== EVENT LINKS — ALL links for a selected event (incl. ones already run) =====
   $("#copyRecapLinkBtn").addEventListener("click", async ()=>{
     const ev=$("#eventSelect").value;
-    if(!ev||ev==="All Events"){ alert("Pick a specific event from the dropdown first, then copy its post-event recap link."); return; }
-    const btn=$("#copyRecapLinkBtn");
+    if(!ev||ev==="All Events"){ alert("Pick a specific event from the dropdown first to get its links."); return; }
+    const btn=$("#copyRecapLinkBtn"); const origLbl=btn.textContent; btn.textContent="Loading…";
     // pull this event's saved details (organizer/company/fee/...) + its date
     let meta={}, when=null;
     try{
@@ -1024,6 +1037,7 @@
              || (rows||[])[0] || {};
       meta=row.summary||{}; when=row.archived_at||null;
     }catch(_){}
+    btn.textContent=origLbl;
     let organizer=(meta.organizer||"").trim(), company=(meta.company||"").trim();
     // older events won't have an organizer saved yet — ask once, then remember it
     if(!organizer){
@@ -1047,13 +1061,23 @@
     if(company) rp.set("co",company);
     rp.set("dt",dtDisp); rp.set("code",ffCode); rp.set("exp",expDisp);
     rp.set("gal",RECAP_GALLERY+"?event="+enc);
-    const link=RECAP_BASE+"?"+rp.toString();
-    const done=()=>{ const o=btn.textContent; btn.textContent="✓ Recap Link Copied!"; setTimeout(()=>btn.textContent=o,1800); };
-    navigator.clipboard.writeText(link).then(done).catch(()=>{
-      const ta=document.createElement("textarea"); ta.value=link; document.body.appendChild(ta); ta.select();
-      try{document.execCommand("copy");}catch(_){} document.body.removeChild(ta); done();
-    });
+    // the full set of links for this event
+    const links=[
+      ["📱 Booth QR link",        BOOTH_URL+"/?event="+enc+"&src=qr"],
+      ["📲 Booth NFC link",       BOOTH_URL+"/?event="+enc+"&src=nfc"],
+      ["📄 Client report link",   DASHBOARD_URL+"?event="+enc+"&report=1"+metaParams(meta)],
+      ["🎁 Post-event recap link",RECAP_BASE+"?"+rp.toString()],
+      ["🖼️ Photo gallery link",   RECAP_GALLERY+"?event="+enc],
+    ];
+    const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    $("#lmEvent").textContent=ev;
+    $("#lmRows").innerHTML=links.map((l,i)=>'<div class="se-link-row"><div class="se-link-label">'+l[0]+'</div><div class="se-link-box"><code id="lmU'+i+'">'+esc(l[1])+'</code><button class="se-copy" data-copy="lmU'+i+'">Copy</button></div></div>').join("");
+    const allText=links.map(l=>l[0].replace(/^\S+\s*/,"")+":\n"+l[1]).join("\n\n");
+    $("#lmCopyAll").onclick=()=>{ const cab=$("#lmCopyAll"); const ok=()=>{const o=cab.textContent;cab.textContent="✓ All Copied!";setTimeout(()=>cab.textContent=o,1600);}; navigator.clipboard.writeText(allText).then(ok).catch(()=>{const ta=document.createElement("textarea");ta.value=allText;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(_){}document.body.removeChild(ta);ok();}); };
+    $("#linksModalBg").classList.add("show");
   });
+  if($("#lmClose")) $("#lmClose").addEventListener("click",()=>$("#linksModalBg").classList.remove("show"));
+  if($("#linksModalBg")) $("#linksModalBg").addEventListener("click",e=>{ if(e.target===$("#linksModalBg")) $("#linksModalBg").classList.remove("show"); });
 
   // ===== START EVENT =====
   // your live booth URL — change here if your booth ever moves
