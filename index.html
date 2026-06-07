@@ -646,6 +646,21 @@
       <div class="highlights" id="rHighlights"></div>
     </div>
 
+    <!-- EVENT PHOTOS -->
+    <div class="section" id="rPhotosSection" style="display:none">
+      <div class="section-title">Your Event Photos</div>
+      <div class="section-sub">EVERY BRANDED PHOTO YOUR GUESTS CREATED — YOURS TO KEEP</div>
+      <div class="highlights">
+        <div class="highlight-item">
+          <div class="hi-icon">📸</div>
+          <div class="hi-text">All the photos from this event live in your private gallery — view them, download any or all, and share them with your whole team.</div>
+        </div>
+        <div style="margin-top:18px;text-align:center">
+          <a class="tb-btn" id="rPhotosBtn" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;font-size:14px;padding:12px 24px">📸 View &amp; Download Event Photos ↗</a>
+        </div>
+      </div>
+    </div>
+
     <!-- CLOSING -->
     <div class="closing">
       <p id="closingText"></p>
@@ -1689,6 +1704,15 @@
     // show report
     $("#statusMsg").style.display="none";
     $("#reportContent").style.display="block";
+
+    // event photos gallery (Event Photo Library) — show only when this event has photos
+    const GALLERY_BASE="https://photoboothapp-rwzs.vercel.app/library.html";
+    if(photoCount>0){
+      $("#rPhotosBtn").href=GALLERY_BASE+"?event="+encodeURIComponent(event);
+      $("#rPhotosSection").style.display="block";
+    } else {
+      $("#rPhotosSection").style.display="none";
+    }
 
     // update URL so it's shareable
     const params=new URLSearchParams();
