@@ -424,6 +424,17 @@
       <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event name</label>
       <input id="seName" placeholder="e.g. SummerFest 2026" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+        <div>
+          <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Organizer first name <span style="opacity:.55">· greeting + gift card</span></label>
+          <input id="seOrganizer" placeholder="e.g. Devi" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Company / client <span style="opacity:.55">· optional</span></label>
+          <input id="seCompany" placeholder="e.g. Mosaic America" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+        </div>
+      </div>
+
       <div style="margin-top:14px">
         <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event type</label>
         <select id="seEventType" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 14px;-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%237df0d0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 13px center">
@@ -473,6 +484,10 @@
       <div class="se-link-row">
         <div class="se-link-label">📄 Client report link</div>
         <div class="se-link-box"><code id="seReportLink"></code><button class="se-copy" data-copy="seReportLink">Copy</button></div>
+      </div>
+      <div class="se-link-row">
+        <div class="se-link-label">🎁 Post-event recap link <span style="opacity:.55">· gift card + photos + review (NFC chip + email)</span></div>
+        <div class="se-link-box"><code id="seRecapLink"></code><button class="se-copy" data-copy="seRecapLink">Copy</button></div>
       </div>
     </div>
 
@@ -995,9 +1010,14 @@
   // your live booth URL — change here if your booth ever moves
   const BOOTH_URL = "https://photoboothapp-rwzs.vercel.app";
   const DASHBOARD_URL = location.origin + location.pathname;
+  // OB360 post-event recap hub (gift card + photos + breathing reset + review)
+  const RECAP_BASE = "https://ob360-recap.vercel.app/";
+  const RECAP_GALLERY = "https://photoboothapp-rwzs.vercel.app/library.html";
 
   $("#startEventBtn").addEventListener("click",()=>{
     $("#seName").value="";
+    $("#seOrganizer").value="";
+    $("#seCompany").value="";
     $("#seFee").value="";
     $("#seFollowers").value="";
     $("#seEventType").value="";
@@ -1040,6 +1060,8 @@
     const fee=parseInt($("#seFee").value)||0;
     const followers=parseInt($("#seFollowers").value)||300;
     const eventType=$("#seEventType").value||"";
+    const organizer=$("#seOrganizer").value.trim();
+    const company=$("#seCompany").value.trim();
     // build the links — fee + followers + event type baked into client report link
     $("#seQrLink").textContent   = BOOTH_URL+"/?event="+enc+"&src=qr";
     $("#seNfcLink").textContent  = BOOTH_URL+"/?event="+enc+"&src=nfc";
@@ -1047,6 +1069,20 @@
     if(fee>0) reportLink += "&fee="+fee;
     if(eventType) reportLink += "&etype="+encodeURIComponent(eventType);
     $("#seReportLink").textContent = reportLink;
+    // ── OB360 post-event recap link (organizer gift card + photos + review) ──
+    const now=new Date();
+    const mmyy=String(now.getMonth()+1).padStart(2,"0")+String(now.getFullYear()).slice(-2);
+    const tag=(company||name).replace(/[^a-zA-Z0-9]/g,"").toUpperCase().slice(0,6)||"GUEST";
+    const ffCode="FF-"+tag+"-"+mmyy;
+    const dtDisp=now.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    const expD=new Date(now); expD.setFullYear(expD.getFullYear()+1);
+    const expDisp=expD.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    const rp=new URLSearchParams();
+    if(organizer) rp.set("n",organizer);
+    if(company) rp.set("co",company);
+    rp.set("dt",dtDisp); rp.set("code",ffCode); rp.set("exp",expDisp);
+    rp.set("gal",RECAP_GALLERY+"?event="+enc);
+    $("#seRecapLink").textContent = RECAP_BASE+"?"+rp.toString();
     $("#seLinks").style.display="block";
     // set as active event in the dashboard dropdown
     const sel=$("#eventSelect");
@@ -1060,7 +1096,7 @@
       fetch(SUPA_URL+"/rest/v1/event_archive",{
         method:"POST",
         headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},
-        body:JSON.stringify({event_name:name,archived_at:new Date().toISOString(),summary:{active:true,fee:fee,followers:followers,etype:eventType}})
+        body:JSON.stringify({event_name:name,archived_at:new Date().toISOString(),summary:{active:true,fee:fee,followers:followers,etype:eventType,organizer:organizer,company:company}})
       }).catch(()=>{});
     }
     loadAll();
