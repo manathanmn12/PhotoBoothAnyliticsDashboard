@@ -295,6 +295,7 @@
       <button id="refreshBtn">↻ Refresh</button>
       <button class="view-switch-btn" id="toReportBtn">📄 Generate Report</button>
       <button id="copyClientLinkBtn">🔗 Copy Client Link</button>
+      <button id="copyRecapLinkBtn">🎁 Copy Recap Link</button>
       <button id="toHistoryBtn">📚 History</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
@@ -1003,6 +1004,51 @@
       document.body.removeChild(ta);
       const orig=btn.textContent; btn.textContent="✓ Link Copied!";
       setTimeout(()=>btn.textContent=orig,1800);
+    });
+  });
+
+  // ===== COPY POST-EVENT RECAP LINK (works on ANY selected event, including ones already run) =====
+  $("#copyRecapLinkBtn").addEventListener("click", async ()=>{
+    const ev=$("#eventSelect").value;
+    if(!ev||ev==="All Events"){ alert("Pick a specific event from the dropdown first, then copy its post-event recap link."); return; }
+    const btn=$("#copyRecapLinkBtn");
+    // pull this event's saved details (organizer/company/fee/...) + its date
+    let meta={}, when=null;
+    try{
+      const rows=await sb("event_archive?event_name=eq."+encodeURIComponent(ev)+"&select=summary,archived_at&order=archived_at.desc&limit=30");
+      const row=(rows||[]).find(r=>r.summary&&(r.summary.organizer||r.summary.company))
+             || (rows||[]).find(r=>r.summary&&(r.summary.fee||r.summary.followers||r.summary.etype))
+             || (rows||[])[0] || {};
+      meta=row.summary||{}; when=row.archived_at||null;
+    }catch(_){}
+    let organizer=(meta.organizer||"").trim(), company=(meta.company||"").trim();
+    // older events won't have an organizer saved yet — ask once, then remember it
+    if(!organizer){
+      organizer=(prompt('Organizer first name for "'+ev+'"\n(used for the greeting + gift card):',"")||"").trim();
+      company=(prompt('Company / client for "'+ev+'" (optional):', company)||"").trim();
+      if((organizer||company)&&SUPA_READY){
+        try{ await fetch(SUPA_URL+"/rest/v1/event_archive",{method:"POST",headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify({event_name:ev,archived_at:new Date().toISOString(),summary:Object.assign({},meta,{organizer:organizer,company:company})})}); }catch(_){}
+      }
+    }
+    // build the recap link (same shape as Start-a-New-Event)
+    const enc=encodeURIComponent(ev);
+    const d=when?new Date(when):new Date();
+    const mmyy=String(d.getMonth()+1).padStart(2,"0")+String(d.getFullYear()).slice(-2);
+    const tag=(company||ev).replace(/[^a-zA-Z0-9]/g,"").toUpperCase().slice(0,6)||"GUEST";
+    const ffCode="FF-"+tag+"-"+mmyy;
+    const dtDisp=d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    const expD=new Date(d); expD.setFullYear(expD.getFullYear()+1);
+    const expDisp=expD.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    const rp=new URLSearchParams();
+    if(organizer) rp.set("n",organizer);
+    if(company) rp.set("co",company);
+    rp.set("dt",dtDisp); rp.set("code",ffCode); rp.set("exp",expDisp);
+    rp.set("gal",RECAP_GALLERY+"?event="+enc);
+    const link=RECAP_BASE+"?"+rp.toString();
+    const done=()=>{ const o=btn.textContent; btn.textContent="✓ Recap Link Copied!"; setTimeout(()=>btn.textContent=o,1800); };
+    navigator.clipboard.writeText(link).then(done).catch(()=>{
+      const ta=document.createElement("textarea"); ta.value=link; document.body.appendChild(ta); ta.select();
+      try{document.execCommand("copy");}catch(_){} document.body.removeChild(ta); done();
     });
   });
 
