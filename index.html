@@ -594,6 +594,12 @@
       </div>
     </div>
 
+    <!-- HERO PHOTO STRIP — the wow, right up top (a few real shots; full gallery is near the bottom) -->
+    <div class="section" id="rHeroSection" style="display:none;margin-bottom:30px">
+      <div id="rHeroStrip" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+      <div style="text-align:center;margin-top:10px"><a id="rHeroAll" href="#" target="_blank" rel="noopener" class="tb-btn sec" style="display:inline-block;text-decoration:none;font-size:13px;padding:9px 18px">📸 See all event photos ↗</a></div>
+    </div>
+
     <!-- KPIs -->
     <div class="section">
       <div class="section-title">Event at a Glance</div>
@@ -1819,8 +1825,13 @@
     if(photoCount>0){
       $("#rPhotosBtn").href=GALLERY_BASE+"?event="+encodeURIComponent(event);
       $("#rPhotosSection").style.display="block";
+      // hero strip up top — pull a few real shots for the "wow"; the full set stays in the gallery button below
+      sb("booth_photos?event_name=eq."+encodeURIComponent(event)+"&select=image_url&order=created_at.desc&limit=3")
+        .then(rows=>{ const imgs=(rows||[]).filter(x=>x&&x.image_url).map(x=>x.image_url); if(imgs.length){ $("#rHeroStrip").innerHTML=imgs.map(u=>'<img loading="lazy" src="'+u+'" alt="Your event" style="width:100%;height:170px;object-fit:cover;border-radius:12px;border:1px solid var(--stroke)">').join(""); $("#rHeroAll").href=GALLERY_BASE+"?event="+encodeURIComponent(event); $("#rHeroSection").style.display="block"; } })
+        .catch(()=>{});
     } else {
       $("#rPhotosSection").style.display="none";
+      $("#rHeroSection").style.display="none";
     }
 
     // update URL so it's shareable — but NEVER for a client view. Rewriting it would
