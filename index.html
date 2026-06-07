@@ -1826,7 +1826,8 @@
       $("#rPhotosBtn").href=GALLERY_BASE+"?event="+encodeURIComponent(event);
       $("#rPhotosSection").style.display="block";
       // hero strip up top — pull a few real shots for the "wow"; the full set stays in the gallery button below
-      sb("booth_photos?event_name=eq."+encodeURIComponent(event)+"&select=image_url&order=created_at.desc&limit=3")
+      fetch(SUPA_URL+"/rest/v1/booth_photos?event_name=eq."+encodeURIComponent(event)+"&select=image_url&order=created_at.desc&limit=3",{headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY}})
+        .then(r=>r.json())
         .then(rows=>{ const imgs=(rows||[]).filter(x=>x&&x.image_url).map(x=>x.image_url); if(imgs.length){ $("#rHeroStrip").innerHTML=imgs.map(u=>'<img loading="lazy" src="'+u+'" alt="Your event" style="width:100%;height:170px;object-fit:cover;border-radius:12px;border:1px solid var(--stroke)">').join(""); $("#rHeroAll").href=GALLERY_BASE+"?event="+encodeURIComponent(event); $("#rHeroSection").style.display="block"; } })
         .catch(()=>{});
     } else {
