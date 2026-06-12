@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>OxygenBar360 — Post-Event Launch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --nv:#0B1E3B; --nv2:#0a1830; --card:#13294f; --line:rgba(255,255,255,.10); --ink:#eaf2fb; --mut:#9fb6cf; --cy:#22E5FF; --gr:#00C9B1; --gold:#F0B429; --re:#ff6b6b; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 600px at 50% -10%,#102a4d,#070f20 60%);min-height:100vh;color:var(--ink);font-family:'Inter',-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:28px 16px}
+  .wrap{max-width:560px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;justify-content:center}
+  .dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#22E5FF,#00C9B1);box-shadow:0 0 12px rgba(0,201,177,.6)}
+  .kick{text-align:center;color:var(--mut);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-top:16px}
+  .h1{text-align:center;font-size:24px;font-weight:800;margin-top:4px}
+  .sub{text-align:center;color:var(--mut);font-size:13px;margin-top:8px;line-height:1.5}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:22px}
+  label{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);font-weight:700;margin:14px 0 6px}
+  input,select{width:100%;padding:12px 14px;background:var(--nv2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15px;font-family:inherit;outline:none}
+  input:focus,select:focus{border-color:rgba(34,229,255,.5)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .hint{font-size:11px;color:#7f99b6;margin-top:5px}
+  button{width:100%;margin-top:20px;padding:14px;border:none;border-radius:10px;background:var(--cy);color:#04243a;font-weight:800;font-size:15px;font-family:inherit;cursor:pointer;letter-spacing:.3px}
+  button:disabled{opacity:.55;cursor:default}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--mut);font-weight:600;margin-top:10px}
+  .msg{margin-top:14px;font-size:13px;padding:11px 14px;border-radius:9px;line-height:1.5;display:none}
+  .msg.err{display:block;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:#ffb4b4}
+  .msg.ok{display:block;background:rgba(0,201,177,.12);border:1px solid rgba(0,201,177,.3);color:#7ff0d8}
+  .links{margin-top:16px;display:none}
+  .lk{display:flex;align-items:center;gap:8px;background:var(--nv2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-top:8px}
+  .lk .lab{font-size:11px;color:var(--mut);min-width:96px;font-weight:600}
+  .lk .url{flex:1;font-size:11px;color:#bcd2ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lk .cp{flex-shrink:0;font-size:11px;color:var(--cy);background:transparent;border:1px solid rgba(34,229,255,.35);border-radius:6px;padding:5px 10px;width:auto;margin:0;font-weight:700}
+  .foot{text-align:center;color:#5f7a95;font-size:11px;margin-top:22px}
+  .who{text-align:center;color:var(--mut);font-size:12px;margin-top:10px}
+  .who b{color:var(--ink)}
+  a.signout{color:var(--mut);text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="dot"></span> OxygenBar360</div>
+  <div class="kick">Post-Event Launch</div>
+  <div class="h1">Send a client their results</div>
+  <div class="sub">Pick the event, enter the organizer's email and how many guests you served. One click sets every link on their contact and fires the 5-email post-event series.</div>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <label>Owner email</label>
+    <input id="liEmail" type="email" placeholder="oxygenbartherapy@gmail.com" autocomplete="username">
+    <label>Password</label>
+    <input id="liPass" type="password" placeholder="Your dashboard password" autocomplete="current-password">
+    <button id="liBtn">Sign in</button>
+    <div class="msg" id="liMsg"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="card" id="mainCard" style="display:none">
+    <div class="who">Signed in as <b id="whoEmail"></b> · <a class="signout" id="signout">sign out</a></div>
+
+    <label>Event</label>
+    <select id="evSelect"><option value="">Loading events…</option></select>
+    <input id="evCustom" type="text" placeholder="…or type the event name exactly" style="margin-top:8px;display:none">
+    <div class="hint">Pick from your booth events, or choose "Other" to type it.</div>
+
+    <label>Organizer email</label>
+    <input id="orgEmail" type="email" placeholder="planner@company.com">
+    <div class="hint">Must match their contact in GoHighLevel.</div>
+
+    <label>Total attendees (whole event)</label>
+    <input id="total" type="number" min="0" placeholder="e.g. 350">
+    <div class="row">
+      <div><label>Hours</label><input id="hours" type="number" min="0" step="0.5" value="4"></div>
+      <div><label># of bars</label><input id="bars" type="number" min="1" value="1"></div>
+    </div>
+    <div class="hint">Served auto-fills from your scan count. Total + hours + # bars drive the participation / capacity stat (so big events show "ran at full capacity" instead of a low %).</div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mut);font-size:12px">Override the served count (optional)</summary><input id="served" type="number" min="0" placeholder="leave blank to use your real scan count" style="margin-top:8px"></details>
+
+    <button id="sendBtn">Send Post-Event Series</button>
+    <button class="ghost" id="previewBtn">Preview the report link only (don't send)</button>
+    <div class="msg" id="msg"></div>
+
+    <div class="links" id="links">
+      <div class="lk"><span class="lab">Results report</span><span class="url" id="u_report"></span><button class="cp" data-c="u_report">Copy</button></div>
+      <div class="lk"><span class="lab">Recap + gift</span><span class="url" id="u_recap"></span><button class="cp" data-c="u_recap">Copy</button></div>
+      <div class="lk"><span class="lab">Photo gallery</span><span class="url" id="u_gallery"></span><button class="cp" data-c="u_gallery">Copy</button></div>
+    </div>
+  </div>
+
+  <div class="foot">OxygenBar360 · Human Reset Infrastructure · owner-only tool</div>
+</div>
+
+<script>
+(function(){
+  var SB_URL="https://aliilrbktjhsppmfhija.supabase.co";
+  var SB_KEY="sb_publishable_zUc_Qg1qtdz3OpSbPJNK5Q_-uhm1Nc4";
+  var AUTOPUSH=SB_URL+"/functions/v1/post-event-autopush";
+  var BOOTH_URL="https://vylxwrvxmozxvbctrhll.supabase.co";
+  var BOOTH_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5bHh3cnZ4bW96eHZiY3RyaGxsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MzA0NDYsImV4cCI6MjA5NjEwNjQ0Nn0.DUwRPoMoKhnOQpnv8p52fHlIBxodTyWUsWtrJf5_3xc";
+  var OWNER="oxygenbartherapy@gmail.com";
+  var KEY="ob360_sender_session";
+  var AUTH=null;
+  var $=function(id){return document.getElementById(id);};
+
+  function load(){ try{ var s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.refresh_token){AUTH=s;return s;} }catch(e){} return null; }
+  function save(s){ AUTH=s; try{ s?localStorage.setItem(KEY,JSON.stringify(s)):localStorage.removeItem(KEY); }catch(e){} }
+  function pack(d){ return { access_token:d.access_token, refresh_token:d.refresh_token, expires_at:Date.now()+((d.expires_in||3600)-300)*1000, email:(d.user&&d.user.email)||(AUTH&&AUTH.email) }; }
+
+  function authPost(path,body){
+    return fetch(SB_URL+path,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().then(function(d){ if(!r.ok) throw new Error(d.msg||d.error_description||d.message||("Error "+r.status)); return d; }); });
+  }
+  function refresh(){ if(!AUTH||!AUTH.refresh_token) return Promise.resolve(null);
+    return authPost("/auth/v1/token?grant_type=refresh_token",{refresh_token:AUTH.refresh_token})
+      .then(function(d){ var s=pack(d); save(s); return s; }).catch(function(){ save(null); return null; }); }
+
+  function showMain(){
+    $("loginCard").style.display="none"; $("mainCard").style.display="";
+    $("whoEmail").textContent=(AUTH&&AUTH.email)||OWNER;
+    loadEvents();
+  }
+  function showLogin(){ $("mainCard").style.display="none"; $("loginCard").style.display=""; $("liEmail").value=(AUTH&&AUTH.email)||OWNER; }
+
+  function signIn(){
+    var email=$("liEmail").value.trim(), pass=$("liPass").value;
+    if(!email||!pass){ msg($("liMsg"),"Enter your email and password.","err"); return; }
+    $("liBtn").disabled=true; msg($("liMsg"),"Signing in…","ok");
+    authPost("/auth/v1/token?grant_type=password",{email:email,password:pass})
+      .then(function(d){ save(pack(d)); $("liMsg").style.display="none"; showMain(); })
+      .catch(function(e){ msg($("liMsg"), /invalid|credential|grant/i.test(e.message)?"Wrong email or password.":e.message,"err"); })
+      .then(function(){ $("liBtn").disabled=false; });
+  }
+
+  function loadEvents(){
+    fetch(BOOTH_URL+"/rest/v1/event_archive?select=event_name,archived_at&order=archived_at.desc&limit=300",{headers:{apikey:BOOTH_ANON,Authorization:"Bearer "+BOOTH_ANON}})
+      .then(function(r){ return r.ok?r.json():[]; })
+      .then(function(rows){
+        var seen={}, names=[];
+        (rows||[]).forEach(function(x){ var n=(x.event_name||"").trim(); if(n&&!seen[n]){ seen[n]=1; names.push(n); } });
+        var sel=$("evSelect"); sel.innerHTML="";
+        var def=document.createElement("option"); def.value=""; def.textContent=names.length?"— Select an event —":"(no booth events found — use Other)"; sel.appendChild(def);
+        names.forEach(function(n){ var o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
+        var other=document.createElement("option"); other.value="__other__"; other.textContent="Other / type it manually…"; sel.appendChild(other);
+      }).catch(function(){ var sel=$("evSelect"); sel.innerHTML='<option value="__other__">Other / type it manually…</option>'; });
+  }
+
+  function eventName(){ var v=$("evSelect").value; if(v==="__other__"||$("evCustom").style.display!=="none") return $("evCustom").value.trim(); return v; }
+
+  function msg(el,t,cls){ el.className="msg "+(cls||""); el.textContent=t; el.style.display="block"; }
+
+  function callPush(doSend){
+    var ev=eventName(), email=$("orgEmail").value.trim(), served=$("served").value.trim(), total=$("total").value.trim();
+    if(!ev){ msg($("msg"),"Pick or type an event name.","err"); return; }
+    if(doSend && !email){ msg($("msg"),"Enter the organizer's email to send the series.","err"); return; }
+    var btn = doSend?$("sendBtn"):$("previewBtn"); btn.disabled=true;
+    msg($("msg"), doSend?"Sending… setting links + firing the series.":"Building the report link…","ok");
+    var body={ event_name:ev, served:served, total:total, hours:(($("hours")&&$("hours").value)||"").trim(), bars:(($("bars")&&$("bars").value)||"").trim() };
+    if(doSend) body.email=email;
+    var headers={ "Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+(AUTH&&AUTH.access_token||"") };
+
+    function go(){ return fetch(AUTOPUSH,{method:"POST",headers:headers,body:JSON.stringify(body)})
+      .then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); }); }
+
+    go().then(function(res){
+      if(res.status===401){ return refresh().then(function(s){ if(!s){ throw new Error("Session expired — sign in again."); } headers.Authorization="Bearer "+s.access_token; return go(); }); }
+      return res;
+    }).then(function(res){
+      var d=res.d||{};
+      if(res.status>=400 || d.ok===false){ throw new Error(d.error||("Request failed ("+res.status+")")); }
+      // show links
+      $("u_report").textContent=d.report_link||"—";
+      $("u_recap").textContent=d.recap_link||"—";
+      $("u_gallery").textContent=d.gallery_link||"—";
+      $("links").style.display="block";
+      if(doSend){
+        var g=d.ghl||{};
+        if(g.ok){ msg($("msg"),"✓ Sent. Links set on the contact + post-event series is firing. ("+(g.fields_set||0)+" fields set)","ok"); }
+        else if(g.step==="contact_not_found"){ msg($("msg"),"Report link built, but no GoHighLevel contact matches "+email+". Add/relabel the contact, then resend.","err"); }
+        else { msg($("msg"),"Report link built. GHL step: "+(g.step||"unknown")+".","err"); }
+      } else {
+        msg($("msg"),"Preview only — nothing sent. Report link is below.","ok");
+      }
+    }).catch(function(e){ msg($("msg"), e.message||"Something went wrong.","err"); })
+      .then(function(){ btn.disabled=false; });
+  }
+
+  document.addEventListener("click",function(e){
+    if(e.target&&e.target.classList&&e.target.classList.contains("cp")){
+      var id=e.target.getAttribute("data-c"); var t=$(id)?$(id).textContent:"";
+      if(t&&t!=="—"){ navigator.clipboard&&navigator.clipboard.writeText(t); e.target.textContent="Copied"; setTimeout(function(){e.target.textContent="Copy";},1500); }
+    }
+  });
+
+  $("liBtn").addEventListener("click",signIn);
+  $("liPass").addEventListener("keydown",function(e){ if(e.key==="Enter") signIn(); });
+  $("sendBtn").addEventListener("click",function(){ callPush(true); });
+  $("previewBtn").addEventListener("click",function(){ callPush(false); });
+  $("signout").addEventListener("click",function(){ save(null); showLogin(); });
+  $("evSelect").addEventListener("change",function(){ $("evCustom").style.display = ($("evSelect").value==="__other__")?"block":"none"; });
+
+  // boot
+  (function(){
+    var s=load();
+    if(!s){ showLogin(); return; }
+    if(s.expires_at && s.expires_at>Date.now()){ showMain(); return; }
+    refresh().then(function(r){ r?showMain():showLogin(); });
+  })();
+})();
+</script>
+</body>
+</html>
