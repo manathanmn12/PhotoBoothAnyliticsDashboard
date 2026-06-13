@@ -278,6 +278,110 @@
     .tb-input{width:140px}
   }
 </style>
+<style id="corpReport">
+/* ===================================================================
+   CORPORATE REPORT REDESIGN  ·  override layer (loads after base)
+   Pyramid/SCR (answer first) · Tufte data-ink (one accent) · Vignelli grid
+   On-brand: navy canvas, single mint accent, mono figures.
+   =================================================================== */
+#reportView{--line:rgba(125,240,208,.20);--hair:rgba(234,246,244,.10);--mono:'JetBrains Mono',monospace;--paper:#071a24}
+#reportView .bg{background:
+  radial-gradient(1200px 800px at 50% -10%,rgba(22,98,127,.22),transparent 60%),
+  linear-gradient(180deg,#08202e,#06141b)}
+#reportView .report{max-width:900px;padding:60px 48px 100px;-webkit-font-smoothing:antialiased}
+
+/* ── MASTHEAD ── */
+#reportView .cover{flex-direction:column;align-items:stretch;gap:0;border-bottom:none;padding-bottom:0;margin-bottom:52px;position:relative}
+#reportView .cover-logos{justify-content:space-between;width:100%;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:0}
+#reportView .masthead-tag{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;color:var(--ink-faint);text-transform:uppercase;align-self:center}
+#reportView .ob-brand{font-size:18px}
+#reportView .cover-left{width:100%}
+#reportView .prepared-for{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--mint);margin-top:30px;min-height:15px}
+#reportView .report-title{font-size:clamp(40px,6.4vw,58px);letter-spacing:-.018em;line-height:1.02;font-weight:600;margin:12px 0 0}
+#reportView .report-title em{color:var(--mint);font-style:italic}
+#reportView .report-meta{font-size:12.5px;color:var(--ink-soft);line-height:1.95;border-top:1px solid var(--hair);padding-top:18px;margin-top:22px}
+#reportView .report-meta span{color:var(--ink-faint);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase}
+#reportView .cover-right{position:absolute;top:36px;right:0;text-align:right}
+#reportView .prepared-by{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em}
+#reportView .prepared-name{font-size:14px}
+#reportView .prepared-tag{font-size:10.5px}
+
+/* ── SECTION SYSTEM (numbered, hairline-ruled) ── */
+#reportView #reportContent{counter-reset:secnum}
+#reportView .section{margin-bottom:44px}
+#reportView .section-title{counter-increment:secnum;font-size:22px;font-weight:600;letter-spacing:-.01em;
+  display:flex;align-items:baseline;gap:14px;padding-bottom:12px;border-bottom:1px solid var(--hair);margin-bottom:20px}
+#reportView .section-title::before{content:counter(secnum,decimal-leading-zero);font-family:var(--mono);
+  font-size:13px;font-weight:500;color:var(--mint);flex-shrink:0}
+#reportView .section-sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--ink-faint);
+  text-transform:uppercase;margin-top:-12px;margin-bottom:20px;padding-left:30px}
+
+/* ── EXECUTIVE SUMMARY (the answer, up top) ── */
+#reportView .exec-headline{font-family:'Fraunces',serif;font-size:25px;line-height:1.4;font-weight:500;color:var(--ink);
+  letter-spacing:-.005em;margin-bottom:28px}
+#reportView .exec-headline b{color:var(--mint);font-weight:600;font-style:normal}
+#reportView .exec-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line)}
+#reportView .exec-stat{padding:20px 22px;border-right:1px solid var(--hair)}
+#reportView .exec-stat:last-child{border-right:none}
+#reportView .es-v{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--mint);line-height:1;letter-spacing:-.02em}
+#reportView .es-l{font-size:11.5px;color:var(--ink-soft);margin-top:10px;line-height:1.45}
+
+/* ── KPI TILES → flat, hairline, mono figures (one accent) ── */
+#reportView .kpi-row{gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:4px;overflow:hidden}
+#reportView .kpi{background:var(--paper);border:none;border-radius:0;padding:20px 20px 18px}
+#reportView .kpi::before{display:none}
+#reportView .kpi .kl{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--ink-faint)}
+#reportView .kpi .kv,
+#reportView .kpi.a1 .kv,#reportView .kpi.a2 .kv,#reportView .kpi.a3 .kv,#reportView .kpi.a4 .kv,
+#reportView .kpi.a5 .kv,#reportView .kpi.a6 .kv{font-family:var(--mono);font-weight:700;font-size:34px;color:var(--mint);margin-top:14px;letter-spacing:-.02em}
+#reportView .kpi .ks{font-size:11px;color:var(--ink-faint);margin-top:8px;line-height:1.4}
+
+/* ── ROI / MEDIA VALUE → ledger panel ── */
+#reportView .roi-box{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:30px}
+#reportView .roi-grid{gap:0;border-top:1px solid var(--hair);margin-top:0}
+#reportView .roi-item{padding:22px 24px;border-right:1px solid var(--hair)}
+#reportView .roi-item:last-child{border-right:none}
+#reportView .roi-item .rv{font-family:var(--mono);font-weight:700;font-size:30px;color:var(--mint)}
+#reportView .roi-item .rl{font-size:11.5px;color:var(--ink-soft);margin-top:8px}
+#reportView .roi-item .rl b{color:var(--ink)}
+#reportView .roi-note{border-top:1px solid var(--hair);padding-top:16px;margin-top:0}
+
+/* ── PANELS / BARS → flat, single accent, thin (Tufte) ── */
+#reportView .panel{background:var(--paper);border:1px solid var(--hair);border-radius:6px}
+#reportView .panel h4{font-size:13px;letter-spacing:.02em;color:var(--ink-soft);font-family:var(--mono);font-weight:500}
+#reportView .bartrack{height:7px;background:rgba(234,246,244,.06)}
+#reportView .barfill{background:var(--mint)!important}
+#reportView .barrow .bl{font-size:12px;color:var(--ink-soft)}
+#reportView .barrow .bv{font-family:var(--mono);font-size:12px;color:var(--ink)}
+#reportView .ftrack{height:22px;background:rgba(234,246,244,.05);border-radius:3px}
+#reportView .ffill{background:var(--mint)!important;color:#04221b;border-radius:3px;font-family:var(--mono)}
+#reportView .frow .fv{font-family:var(--mono)}
+#reportView .moodchip{background:var(--paper);border:1px solid var(--hair);border-radius:5px}
+#reportView .moodchip .mc{font-family:var(--mono);color:var(--mint)}
+
+/* ── HIGHLIGHTS / CLOSING ── */
+#reportView .highlights{background:var(--paper);border:1px solid var(--hair);border-radius:6px;padding:8px 22px}
+#reportView .highlight-item{padding:15px 0;border-bottom:1px solid var(--hair)}
+#reportView .hi-text{font-size:13.5px}
+#reportView .closing{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:34px;margin-top:44px}
+#reportView .closing p{font-size:19px;font-style:italic}
+#reportView .closing .sig{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+
+/* ── PRINT ── */
+@media print{
+  #reportView .report{padding:0}
+  #reportView .es-v,#reportView .kpi .kv,#reportView .roi-item .rv,
+  #reportView .section-title::before,#reportView .prepared-for,#reportView .exec-headline b{color:#0a6e5d!important}
+  #reportView .barfill,#reportView .ffill{background:#0a6e5d!important}
+  #reportView .kpi-row{background:#ddd}
+}
+@media(max-width:700px){
+  #reportView .report{padding:36px 20px 70px}
+  #reportView .exec-stats,#reportView .roi-grid{grid-template-columns:1fr}
+  #reportView .exec-stat,#reportView .roi-item{border-right:none;border-bottom:1px solid var(--hair)}
+  #reportView .cover-right{position:static;text-align:left;margin-top:20px}
+}
+</style>
 </head>
 <body><div class="bg"></div>
 <div id="dashboardView">
@@ -577,17 +681,19 @@
 
   <div id="reportContent" style="display:none">
 
-    <!-- COVER -->
+    <!-- COVER MASTHEAD -->
     <div class="cover">
-      <div class="cover-left">
-        <div class="cover-logos">
-          <div class="ob-brand"><span class="dot"></span>OxygenBar360</div>
-          <div class="client-logo-wrap" id="clientLogoWrap">
-            <span class="logo-sep">×</span>
-            <img class="client-logo-img" id="clientLogoImg" alt="Client logo">
-            <span class="client-name-display" id="clientNameDisplay"></span>
-          </div>
+      <div class="cover-logos">
+        <div class="ob-brand"><span class="dot"></span>OxygenBar360</div>
+        <div class="client-logo-wrap" id="clientLogoWrap">
+          <span class="logo-sep">×</span>
+          <img class="client-logo-img" id="clientLogoImg" alt="Client logo">
+          <span class="client-name-display" id="clientNameDisplay"></span>
         </div>
+        <div class="masthead-tag">Post-Event Impact Report</div>
+      </div>
+      <div class="cover-left">
+        <div class="prepared-for" id="preparedFor"></div>
         <div class="report-title">Post-Event<br><em>Impact Report</em></div>
         <div class="report-meta" id="reportMeta"></div>
       </div>
@@ -595,6 +701,17 @@
         <div class="prepared-by">Prepared by</div>
         <div class="prepared-name">OxygenBar360</div>
         <div class="prepared-tag">Human Reset Infrastructure</div>
+      </div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY — answer-first (McKinsey SCR) -->
+    <div class="section" id="rExecSection">
+      <div class="section-title">Executive Summary</div>
+      <div class="exec-headline" id="exHeadline">—</div>
+      <div class="exec-stats">
+        <div class="exec-stat"><div class="es-v" id="exStatA">—</div><div class="es-l">Scan-to-share conversion</div></div>
+        <div class="exec-stat"><div class="es-v" id="exStatB">—</div><div class="es-l">Estimated social impressions</div></div>
+        <div class="exec-stat"><div class="es-v" id="exStatC">—</div><div class="es-l">Estimated brand exposure</div></div>
       </div>
     </div>
 
@@ -1736,6 +1853,24 @@
     if(venue) meta+=` &nbsp;·&nbsp; <span>Venue:</span> ${venue}`;
     $("#reportMeta").innerHTML=meta;
 
+    // ── PREPARED FOR (masthead) ──
+    const pf=$("#preparedFor");
+    if(pf) pf.textContent="Prepared for "+(client||event);
+
+    // ── EXECUTIVE SUMMARY (answer-first claim + 3 supporting figures) ──
+    const exVal=adValue?("$"+Number(adValue).toLocaleString()):"—";
+    const exReach=reach?fmt(reach):"—";
+    const exHl=$("#exHeadline");
+    if(exHl){
+      exHl.innerHTML=`<b>${event}</b> turned <b>${scans}</b> guest scans into <b>${shared} branded photos</b>, reaching an estimated `
+        +`<b>${exReach}</b> social impressions`
+        +(adValue?` — about <b>${exVal}</b> in earned brand exposure${fee?` against a $${Number(fee).toLocaleString()} investment`:""}`:"")
+        +`.`;
+    }
+    if($("#exStatA")) $("#exStatA").textContent=conv+"%";
+    if($("#exStatB")) $("#exStatB").textContent=exReach;
+    if($("#exStatC")) $("#exStatC").textContent=exVal;
+
     // client branding
     if(client){
       $("#clientLogoWrap").classList.add("show");
@@ -1972,5 +2107,6 @@
   }catch(_){}
 })();
 </script>
-<script>(function(){try{var q=new URLSearchParams(location.search);if(!(q.get("report")==="1"||q.get("report")==="true"))return;var served=parseInt(q.get("served")||"",10);if(!served||served<=0)return;var total=parseInt(q.get("total")||"",10);var hours=parseFloat(q.get("hours")||"")||4;var bars=parseInt(q.get("bars")||"",10)||1;var maxCap=120*bars*hours;var reach=(total>0)?Math.round(served/total*100):null;var cap=(maxCap>0)?Math.min(100,Math.round(served/maxCap*100)):null;var useCap=(reach==null)||(cap!=null&&cap>reach);var card=document.getElementById("repPart");if(!card)return;var kl=card.parentElement.querySelector(".kl");var ks=card.parentElement.querySelector(".ks");if(useCap&&cap!=null){card.textContent=cap+"%";if(kl)kl.textContent="Capacity Utilization";if(ks)ks.textContent="ran near full - ~"+Math.round(served/hours)+"/hr";}else if(reach!=null){card.textContent=reach+"%";if(kl)kl.textContent="Guest Participation";if(ks)ks.textContent="of "+total.toLocaleString()+" guests";}}catch(_){}})();</script></body>
+<script>(function(){try{var q=new URLSearchParams(location.search);if(!(q.get("report")==="1"||q.get("report")==="true"))return;var served=parseInt(q.get("served")||"",10);if(!served||served<=0)return;var total=parseInt(q.get("total")||"",10);var hours=parseFloat(q.get("hours")||"")||4;var bars=parseInt(q.get("bars")||"",10)||1;var maxCap=120*bars*hours;var reach=(total>0)?Math.round(served/total*100):null;var cap=(maxCap>0)?Math.min(100,Math.round(served/maxCap*100)):null;var useCap=(reach==null)||(cap!=null&&cap>reach);var card=document.getElementById("repPart");if(!card)return;var kl=card.parentElement.querySelector(".kl");var ks=card.parentElement.querySelector(".ks");if(useCap&&cap!=null){card.textContent=cap+"%";if(kl)kl.textContent="Capacity Utilization";if(ks)ks.textContent="ran near full - ~"+Math.round(served/hours)+"/hr";}else if(reach!=null){card.textContent=reach+"%";if(kl)kl.textContent="Guest Participation";if(ks)ks.textContent="of "+total.toLocaleString()+" guests";}}catch(_){}})();</script>
+</body>
 </html>
