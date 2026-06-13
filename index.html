@@ -382,6 +382,67 @@
   #reportView .cover-right{position:static;text-align:left;margin-top:20px}
 }
 </style>
+<style id="corpDash">
+/* ===================================================================
+   CORPORATE OPERATOR DASHBOARD · override layer (matches the report)
+   Single mint accent · flat hairline panels · mono figures · restraint
+   Scoped to #dashboardView so the report view is unaffected.
+   =================================================================== */
+#dashboardView{--line:rgba(125,240,208,.20);--hair:rgba(234,246,244,.10);--mono:'JetBrains Mono',monospace;--paper:#071a24}
+
+/* header / controls */
+#dashboardView .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;color:var(--ink-faint)}
+#dashboardView .controls select,#dashboardView .controls button{border-radius:8px;font-size:12.5px}
+#dashboardView .controls button.primary{background:var(--mint);color:#04221b}
+#dashboardView .view-switch-btn{background:var(--mint)!important;color:#04221b!important}
+#dashboardView .live-pill{background:var(--paper);border:1px solid var(--hair);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+
+/* section labels → hairline-ruled, mono tag */
+#dashboardView .slabel{font-family:'Fraunces',serif;font-weight:600;border-bottom:1px solid var(--hair);padding-bottom:11px;margin:34px 0 16px}
+#dashboardView .slabel .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;background:none;color:var(--ink-faint);border:1px solid var(--hair)}
+
+/* single accent everywhere */
+#dashboardView .a1,#dashboardView .a2,#dashboardView .a3,#dashboardView .a4,#dashboardView .a5,#dashboardView .a6{--accent:var(--mint)}
+
+/* HERO cards → flat, hairline, mono figures */
+#dashboardView .hero-card{background:var(--paper);border:1px solid var(--hair);border-radius:8px}
+#dashboardView .hero-card.feature{background:var(--paper);border-color:var(--line)}
+#dashboardView .hero-card:before{background:var(--mint)}
+#dashboardView .hero-card .hl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-faint)}
+#dashboardView .hero-card .hv,#dashboardView .hero-card.feature .hv{font-family:var(--mono);font-weight:700;color:var(--mint);font-size:40px;letter-spacing:-.02em}
+#dashboardView .hero-card.feature .hv{font-size:44px}
+#dashboardView .hero-card .hs{font-size:11.5px;color:var(--ink-faint)}
+
+/* FUNNEL */
+#dashboardView .funnel-panel{background:var(--paper);border:1px solid var(--hair);border-radius:8px}
+#dashboardView .fbar-track{background:rgba(234,246,244,.05);border-radius:6px}
+#dashboardView .fbar-fill{background:var(--mint)!important;border-radius:6px;color:#04221b}
+#dashboardView .fbar-val .n{font-family:var(--mono);font-size:18px}
+#dashboardView .fdrop.bad{color:var(--ink-faint)}
+
+/* panels / bars */
+#dashboardView .panel{background:var(--paper);border:1px solid var(--hair);border-radius:8px}
+#dashboardView .panel h4{font-family:'Fraunces',serif}
+#dashboardView .panel .psub{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
+#dashboardView .bartrack{background:rgba(234,246,244,.06)}
+#dashboardView .barfill{background:var(--mint)!important}
+
+/* leaderboard → one accent */
+#dashboardView .lrow{background:var(--paper);border:1px solid var(--hair);border-radius:8px}
+#dashboardView .lrow .rank,#dashboardView .lrow .rank.r1,#dashboardView .lrow .rank.r2,#dashboardView .lrow .rank.r3{font-family:var(--mono);color:var(--mint)}
+#dashboardView .lrow .tcount{font-family:var(--mono);color:var(--mint)}
+#dashboardView .tbadge.qr,#dashboardView .tbadge.nfc{background:rgba(125,240,208,.12);color:var(--mint);font-family:var(--mono);font-weight:500}
+
+/* mood */
+#dashboardView .mood{background:var(--paper);border:1px solid var(--hair);border-radius:8px}
+#dashboardView .mood .ct{font-family:var(--mono);color:var(--mint)}
+#dashboardView .mood .nm{font-family:var(--mono);letter-spacing:.08em}
+
+/* ROI ledger */
+#dashboardView .roi-panel{background:var(--paper);border:1px solid var(--line)}
+#dashboardView .roi-item .rv{font-family:var(--mono);color:var(--mint)}
+#dashboardView .footnote{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-faint)}
+</style>
 </head>
 <body><div class="bg"></div>
 <div id="dashboardView">
