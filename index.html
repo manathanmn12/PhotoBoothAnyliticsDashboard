@@ -634,6 +634,39 @@
           <div style="font-size:11px;color:var(--ink-faint);margin-top:4px">Auto-filled · adjust if needed</div>
         </div>
       </div>
+
+      <div style="margin-top:14px">
+        <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Event date</label>
+        <input id="seDate" type="date" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:11px 14px">
+      </div>
+
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--stroke)">
+        <div style="font-size:12px;color:var(--mint);letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:4px">🎨 Booth co-branding</div>
+        <div style="font-size:11px;color:var(--ink-faint);margin-bottom:10px">Fill any of these to theme the photo booth to this client. Leave all blank for the default OxygenBar360 teal.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Brand name on booth <span style="opacity:.55">· e.g. Google</span></label>
+            <input id="seBrandName" placeholder="defaults to company" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Brand color</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="seColor" type="color" value="#7df0d0" style="width:46px;height:44px;background:var(--glass);border:1px solid var(--stroke-2);border-radius:10px;padding:3px;cursor:pointer">
+              <input id="seColorHex" placeholder="#4285F4" style="flex:1;min-width:0;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:14px;border-radius:10px;padding:12px 10px">
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div>
+            <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Hashtag <span style="opacity:.55">· no #</span></label>
+            <input id="seHash" placeholder="LifeAtGoogle" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+          </div>
+          <div>
+            <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Social handle</label>
+            <input id="seHandle" placeholder="@Google" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="seLinks" style="display:none">
@@ -1296,6 +1329,12 @@
     $("#seFee").value="";
     $("#seFollowers").value="";
     $("#seEventType").value="";
+    $("#seDate").value="";
+    $("#seBrandName").value="";
+    $("#seColor").value="#7df0d0";
+    $("#seColorHex").value="";
+    $("#seHash").value="";
+    $("#seHandle").value="";
     $("#seFollowerHint").textContent="";
     $("#seLinks").style.display="none";
     $("#startModalBg").classList.add("show");
@@ -1327,6 +1366,10 @@
     }
   });
 
+  // sync brand color picker <-> hex text
+  if($("#seColor")) $("#seColor").addEventListener("input",function(){ $("#seColorHex").value=this.value.toUpperCase(); });
+  if($("#seColorHex")) $("#seColorHex").addEventListener("input",function(){ var v=this.value.trim().replace(/^#/,""); if(/^[0-9a-fA-F]{6}$/.test(v)) $("#seColor").value="#"+v; });
+
   $("#seGenerate").addEventListener("click",()=>{
     const name=$("#seName").value.trim();
     if(!name){ alert("Give your event a name first"); return; }
@@ -1337,6 +1380,16 @@
     const eventType=$("#seEventType").value||"";
     const organizer=$("#seOrganizer").value.trim();
     const company=$("#seCompany").value.trim();
+    // ── booth co-branding (optional; blank = default teal booth) ──
+    const evDate=$("#seDate").value;
+    const brandHex=($("#seColorHex").value.trim().replace(/^#/,"")).toUpperCase();
+    const brandNameIn=$("#seBrandName").value.trim();
+    const hashTag=$("#seHash").value.trim().replace(/^#/,"");
+    const handle=$("#seHandle").value.trim();
+    const wantsBrand=!!(brandHex||brandNameIn||hashTag||handle);
+    const archISO=evDate?new Date(evDate+"T12:00:00").toISOString():new Date().toISOString();
+    const summaryObj={active:true,fee:fee,followers:followers,etype:eventType,organizer:organizer,company:company};
+    if(wantsBrand){ if(brandHex)summaryObj.brand=brandHex; summaryObj.client=(brandNameIn||company||name); if(hashTag)summaryObj.hash=hashTag; if(handle)summaryObj.handle=handle; }
     // build the links — fee + followers + event type baked into client report link
     $("#seQrLink").textContent   = BOOTH_URL+"/?event="+enc+"&src=qr";
     $("#seNfcLink").textContent  = BOOTH_URL+"/?event="+enc+"&src=nfc";
@@ -1372,7 +1425,7 @@
       fetch(SUPA_URL+"/rest/v1/event_archive",{
         method:"POST",
         headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},
-        body:JSON.stringify({event_name:name,archived_at:new Date().toISOString(),summary:{active:true,fee:fee,followers:followers,etype:eventType,organizer:organizer,company:company}})
+        body:JSON.stringify({event_name:name,archived_at:archISO,summary:summaryObj})
       }).catch(()=>{});
     }
     loadAll();
