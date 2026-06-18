@@ -813,6 +813,7 @@
     <div class="section" id="rHeroSection" style="display:none;margin-bottom:30px">
       <div id="rHeroStrip" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
       <div style="text-align:center;margin-top:10px"><a id="rHeroAll" href="#" target="_blank" rel="noopener" class="tb-btn sec" style="display:inline-block;text-decoration:none;font-size:13px;padding:9px 18px">📸 See all event photos ↗</a></div>
+      <div style="text-align:center;margin-top:12px"><button onclick="shareReport()" style="display:inline-flex;align-items:center;gap:7px;font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:#04221b;background:linear-gradient(120deg,var(--mint,#7df0d0),var(--aqua,#46c7e8));border:none;border-radius:99px;padding:12px 26px;cursor:pointer;box-shadow:0 6px 20px rgba(125,240,208,.25)">↗ Share this report with your team</button></div>
     </div>
 
     <!-- KPIs (hidden in streamlined client report) -->
@@ -2020,7 +2021,7 @@
 
     // ROI + earned media value
     if($("#repPhotos")) $("#repPhotos").textContent=photoCount;
-    if($("#repCameBack")) $("#repCameBack").textContent=repeats;
+    if($("#repCameBack")){ var _rb=new URLSearchParams(location.search).get("returned"); $("#repCameBack").textContent=(_rb!==null&&_rb!=="")?_rb:repeats; }
     if($("#repReach")) $("#repReach").textContent=fmt(reach);
     if($("#repCPI")) $("#repCPI").textContent=adValue?("$"+Number(adValue).toLocaleString()):"—";
     const roiRatio=(fee>0&&adValue)?(adValue/fee):0;
