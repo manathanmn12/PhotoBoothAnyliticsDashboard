@@ -72,12 +72,14 @@
 
     <label>Total attendees (whole event)</label>
     <input id="total" type="number" min="0" placeholder="e.g. 350">
+    <label style="margin-top:10px">Cannula bags used <span style="color:var(--mut);font-weight:400">(× 20 = guests served)</span></label>
+    <input id="bags" type="number" min="0" placeholder="e.g. 7  →  140 guests served">
     <div class="row">
       <div><label>Hours</label><input id="hours" type="number" min="0" step="0.5" value="4"></div>
       <div><label># of bars</label><input id="bars" type="number" min="1" value="1"></div>
     </div>
-    <div class="hint">Served auto-fills from your scan count. Total + hours + # bars drive the participation / capacity stat (so big events show "ran at full capacity" instead of a low %).</div>
-    <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mut);font-size:12px">Override the served count (optional)</summary><input id="served" type="number" min="0" placeholder="leave blank to use your real scan count" style="margin-top:8px"></details>
+    <div class="hint">Guests served = cannula bags × 20 (one cannula per guest) — the real headcount, not the photo/scan count. Total + hours + # bars drive the participation / capacity stat (so big events show "ran at full capacity" instead of a low %).</div>
+    <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--mut);font-size:12px">Override the served count directly (optional)</summary><input id="served" type="number" min="0" placeholder="leave blank to use cannula bags × 20" style="margin-top:8px"></details>
 
     <button id="sendBtn">Send Post-Event Series</button>
     <button class="ghost" id="previewBtn">Preview the report link only (don't send)</button>
@@ -152,12 +154,14 @@
   function msg(el,t,cls){ el.className="msg "+(cls||""); el.textContent=t; el.style.display="block"; }
 
   function callPush(doSend){
-    var ev=eventName(), email=$("orgEmail").value.trim(), served=$("served").value.trim(), total=$("total").value.trim();
+    var ev=eventName(), email=$("orgEmail").value.trim(), total=$("total").value.trim();
+    var bagsV=(($("bags")&&$("bags").value)||"").trim();
+    var served=$("served").value.trim()||(bagsV?String(parseInt(bagsV,10)*20):"");
     if(!ev){ msg($("msg"),"Pick or type an event name.","err"); return; }
     if(doSend && !email){ msg($("msg"),"Enter the organizer's email to send the series.","err"); return; }
     var btn = doSend?$("sendBtn"):$("previewBtn"); btn.disabled=true;
     msg($("msg"), doSend?"Sending… setting links + firing the series.":"Building the report link…","ok");
-    var body={ event_name:ev, served:served, total:total, hours:(($("hours")&&$("hours").value)||"").trim(), bars:(($("bars")&&$("bars").value)||"").trim() };
+    var body={ event_name:ev, served:served, total:total, bags:bagsV, hours:(($("hours")&&$("hours").value)||"").trim(), bars:(($("bars")&&$("bars").value)||"").trim() };
     if(doSend) body.email=email;
     var headers={ "Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+(AUTH&&AUTH.access_token||"") };
 

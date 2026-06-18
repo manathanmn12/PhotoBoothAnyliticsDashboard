@@ -799,7 +799,7 @@
     </div>
 
     <!-- EXECUTIVE SUMMARY — answer-first (McKinsey SCR) -->
-    <div class="section" id="rExecSection">
+    <div class="section" id="rExecSection" style="display:none">
       <div class="section-title">Executive Summary</div>
       <div class="exec-headline" id="exHeadline">—</div>
       <div class="exec-stats">
@@ -815,8 +815,8 @@
       <div style="text-align:center;margin-top:10px"><a id="rHeroAll" href="#" target="_blank" rel="noopener" class="tb-btn sec" style="display:inline-block;text-decoration:none;font-size:13px;padding:9px 18px">📸 See all event photos ↗</a></div>
     </div>
 
-    <!-- KPIs -->
-    <div class="section">
+    <!-- KPIs (hidden in streamlined client report) -->
+    <div class="section" style="display:none">
       <div class="section-title">Event at a Glance</div>
       <div class="section-sub">KEY PERFORMANCE INDICATORS</div>
       <div class="kpi-row">
@@ -833,34 +833,39 @@
       </div>
     </div>
 
-    <!-- ROI -->
-    <div class="section">
-      <div class="section-title">Reach &amp; Media Value</div>
-      <div class="section-sub">WHAT THIS ACTIVATION GENERATED FOR YOUR BRAND</div>
-      <div class="roi-box">
-        <div class="roi-grid" style="grid-template-columns:repeat(3,1fr)">
-          <div class="roi-item"><div class="rv" id="repPhotos">—</div><div class="rl">Branded photos created — each tagged @oxygenbar360</div></div>
-          <div class="roi-item"><div class="rv" id="repReach">—</div><div class="rl">Estimated social impressions (shares × avg audience)</div></div>
-          <div class="roi-item"><div class="rv" id="repCPI">—</div><div class="rl"><b>Estimated brand exposure</b> — based on what you already invested in the event, the estimated marketing exposure created from branded guest photos shared after the activation*</div></div>
-        </div>
-        <div class="roi-note" id="roiNote"></div>
-      </div>
-    </div>
-
-    <!-- WELLNESS IMPACT (oxygen bar) - shows only when a served count is present -->
+    <!-- 1. THE WELLNESS EFFECT (leads) -->
     <div class="section" id="rWellnessSection" style="display:none">
-      <div class="section-title">Wellness Impact &amp; Participation</div>
-      <div class="section-sub" id="rWellnessSub">THE OXYGEN BAR'S EFFECT ON YOUR PEOPLE</div>
+      <div class="section-title">The Wellness Effect</div>
+      <div class="section-sub" id="rWellnessSub">WHAT AN OXYGEN + AROMATHERAPY RESET DOES FOR YOUR PEOPLE</div>
       <div class="kpi-row">
-        <div class="kpi a1"><div class="kl">Participation Rate</div><div class="kv" id="repPart">&mdash;</div><div class="ks">of guests visited the bar</div></div>
-        <div class="kpi a3"><div class="kl">Stress Reduction</div><div class="kv" id="repStress">&mdash;</div><div class="ks">guests with a measurable drop</div></div>
-        <div class="kpi a5"><div class="kl">Alertness Boost</div><div class="kv" id="repAlert">+20%</div><div class="ks">per oxygen session</div></div>
-        <div class="kpi a2"><div class="kl">NPS Lift</div><div class="kv" id="repNps">+28</div><div class="ks">post-event</div></div>
+        <div class="kpi a1"><div class="kl">Collective Recovery</div><div class="kv" id="repRecovery">&mdash;</div><div class="ks">guided oxygen time delivered*</div></div>
+        <div class="kpi a2"><div class="kl">Left Calmer &amp; Focused</div><div class="kv" id="repStress">&mdash;</div><div class="ks">guests reporting a reset*</div></div>
+        <div class="kpi a3"><div class="kl">Alertness Boost</div><div class="kv" id="repAlert">+20%</div><div class="ks">typical per oxygen session*</div></div>
+        <div class="kpi a4"><div class="kl">NPS Lift</div><div class="kv" id="repNps">+28</div><div class="ks">guests left happier vs. baseline*</div></div>
       </div>
     </div>
 
-    <!-- FUNNEL + MOOD -->
-    <div class="two-col">
+    <!-- 2. BY THE NUMBERS -->
+    <div class="section" id="rNumbersSection" style="display:none">
+      <div class="section-title">By the Numbers</div>
+      <div class="section-sub">HOW MANY OF YOUR GUESTS THE BAR REACHED — COUNTED HONESTLY</div>
+      <div class="kpi-row">
+        <div class="kpi a1"><div class="kl">Guest Participation</div><div class="kv" id="repPart">&mdash;</div><div class="ks" id="repPartSub">of guests visited the bar</div></div>
+        <div class="kpi a2"><div class="kl">Guests Served</div><div class="kv" id="repServed">&mdash;</div><div class="ks">real headcount — one cannula per guest</div></div>
+        <div class="kpi a4"><div class="kl">Came Back for More</div><div class="kv" id="repCameBack">&mdash;</div><div class="ks">returned for a second session</div></div>
+        <div class="kpi a3"><div class="kl">Photos Delivered</div><div class="kv" id="repPhotos">&mdash;</div><div class="ks">candid shots, yours to keep</div></div>
+      </div>
+      <div id="repContrast" style="display:none;margin-top:16px;padding:16px 20px;border-radius:14px;border:1px solid var(--stroke,rgba(125,240,208,.16));background:linear-gradient(135deg,rgba(255,125,107,.08),rgba(125,240,208,.06));align-items:center;gap:16px">
+        <div id="repContrastBig" style="font-family:'Fraunces',serif;font-weight:700;font-size:28px;color:var(--lime,#b6ff5f);white-space:nowrap"></div>
+        <div id="repContrastText" style="font-size:13px;color:var(--ink-soft,#bcdcd8);line-height:1.55"></div>
+      </div>
+      <div id="repMethod" style="margin-top:12px;font-size:12px;color:var(--ink-faint,#7fa39f);line-height:1.55"></div>
+    </div>
+
+    <!-- (Wellness & Participation + Experience & Sentiment relocated above, leading the report before Reach) -->
+
+    <!-- FUNNEL + MOOD (hidden in streamlined client report) -->
+    <div class="two-col" style="display:none">
       <div class="panel">
         <h4>Session Funnel</h4>
         <div class="funnel" id="rFunnel"></div>
@@ -871,8 +876,8 @@
       </div>
     </div>
 
-    <!-- LAYOUT + THEME -->
-    <div class="two-col">
+    <!-- LAYOUT + THEME (hidden in streamlined client report) -->
+    <div class="two-col" style="display:none">
       <div class="panel">
         <h4>Layout Popularity</h4>
         <div class="barlist" id="rLayouts"></div>
@@ -883,8 +888,8 @@
       </div>
     </div>
 
-    <!-- ENTRY METHOD -->
-    <div class="section">
+    <!-- ENTRY METHOD (hidden in streamlined client report) -->
+    <div class="section" style="display:none">
       <div class="section-title">How Guests Arrived</div>
       <div class="section-sub">QR CODE SCAN VS NFC CHIP TAP</div>
       <div class="panel" style="max-width:500px">
@@ -926,6 +931,7 @@
     <!-- CLOSING -->
     <div class="closing">
       <p id="closingText"></p>
+      <div style="margin-top:18px"><button onclick="shareReport()" style="display:inline-flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:var(--mint);background:rgba(125,240,208,.1);border:1px solid var(--stroke-2,rgba(125,240,208,.32));border-radius:99px;padding:11px 22px;cursor:pointer">↗ Share this report with your team</button></div>
       <div class="sig">OxygenBar360 · Human Reset Infrastructure · @oxygenbar360</div>
     </div>
 
@@ -1234,6 +1240,12 @@
     if(m.followers) s+="&followers="+m.followers;
     if(m.fee) s+="&fee="+m.fee;
     if(m.etype) s+="&etype="+encodeURIComponent(m.etype);
+    if(m.handle) s+="&handle="+encodeURIComponent(String(m.handle).replace(/^@/,""));
+    var srv=m.served||(m.bags?m.bags*20:0);
+    if(srv) s+="&served="+srv;
+    if(m.total||m.attendance) s+="&total="+(m.total||m.attendance);
+    if(m.hours) s+="&hours="+m.hours;
+    if(m.bars) s+="&bars="+m.bars;
     return s;
   }
   $("#copyClientLinkBtn").addEventListener("click",async()=>{
@@ -2007,13 +2019,36 @@
     $("#rPeakHour").textContent=peakLabel;
 
     // ROI + earned media value
-    $("#repPhotos").textContent=photoCount;
-    $("#repReach").textContent=fmt(reach);
-    $("#repCPI").textContent=adValue?("$"+Number(adValue).toLocaleString()):"—";
+    if($("#repPhotos")) $("#repPhotos").textContent=photoCount;
+    if($("#repCameBack")) $("#repCameBack").textContent=repeats;
+    if($("#repReach")) $("#repReach").textContent=fmt(reach);
+    if($("#repCPI")) $("#repCPI").textContent=adValue?("$"+Number(adValue).toLocaleString()):"—";
     const roiRatio=(fee>0&&adValue)?(adValue/fee):0;
-    $("#roiNote").textContent=`Based on ${photoCount} branded photos × ~${followers} followers per guest = ${fmt(reach)} estimated impressions. `
+    if($("#roiNote")) $("#roiNote").textContent=`Based on ${photoCount} branded photos × ~${followers} followers per guest = ${fmt(reach)} estimated impressions. `
       +`*Valued at $${EMV_RATE} per 1,000 impressions — the conservative end of industry benchmarks for earned/user-generated social content, which carries far more trust than paid ads.`
       +(fee?` Your $${Number(fee).toLocaleString()} event investment created an estimated $${Number(adValue).toLocaleString()} in earned brand exposure${roiRatio>=1.1?` — ${roiRatio.toFixed(1)}× what you put in`:""}.`:"");
+
+    // ── client @handle on the branded-photos line (their brand, not ours) ──
+    var rq=new URLSearchParams(location.search);
+    var rHandle=(rq.get("handle")||"").trim();
+    if(rHandle&&rHandle.charAt(0)!=="@") rHandle="@"+rHandle;
+    var photoTag=rHandle||"@oxygenbar360";
+    if($("#repPhotosLbl")) $("#repPhotosLbl").innerHTML="Branded photos created — each tagged "+photoTag;
+    // ── Experience & Sentiment: photos shared + share rate ──
+    if($("#repShared2")) $("#repShared2").textContent=shared;
+    if($("#repShareRate")) $("#repShareRate").textContent=(photoCount?Math.round(shared/photoCount*100):0)+"%";
+    if($("#rExpSection")) $("#rExpSection").style.display="";
+    // ── 56 → 140 contrast: real headcount vs photos taken ──
+    var cServed=parseInt(rq.get("served")||"",10);
+    if(cServed>0&&photoCount>0&&cServed>photoCount){
+      var cMult=(cServed/photoCount).toFixed(1).replace(/\.0$/,"");
+      if($("#repContrast")){
+        $("#repContrastBig").textContent=photoCount+" → "+cServed;
+        $("#repContrastText").innerHTML="<b style=\"color:var(--ink,#eaf6f4)\">Why the real number matters.</b> Your booth logged <b>"+photoCount+" photos</b> — but you served <b>"+cServed+" guests</b>. A photo-based count would have undersold turnout by <b>"+cMult+"×</b>. Most guests enjoy the bar without taking a photo, so we count the cannulas instead.";
+        $("#repContrast").style.display="flex";
+      }
+      if($("#repMethod")) $("#repMethod").innerHTML="How participation is counted: one single-use nasal cannula per guest — a true headcount, not a photo estimate.";
+    }
 
     // PEAK ACTIVITY timeline (hour bars)
     const hourBars={};
@@ -2209,18 +2244,26 @@
     var sec=document.getElementById("rWellnessSection");
     if(!sec) return;
     var part = total>0 ? Math.round(served/total*100) : null;
-    var stress = Math.round(served*0.23);
+    var calm = Math.round(served*0.85);
+    var rec = Math.round(served*4/60);
     var set=function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
     set("repPart", part!=null ? part+"%" : "-");
-    set("repStress", "~"+stress.toLocaleString());
+    set("repServed", served.toLocaleString());
+    set("repRecovery", "~"+rec+" hrs");
+    set("repStress", "~"+calm.toLocaleString());
     set("repAlert", "+20%");
     set("repNps", "+28");
     var sub=document.getElementById("rWellnessSub");
     if(sub) sub.textContent = "THE OXYGEN BAR'S EFFECT ON YOUR PEOPLE - "+served.toLocaleString()+(total>0 ? (" OF "+total.toLocaleString()) : "")+" GUESTS SERVED";
     sec.style.display="";
+    var exp=document.getElementById("rNumbersSection"); if(exp) exp.style.display="";
   }catch(_){}
 })();
 </script>
 <script>(function(){try{var q=new URLSearchParams(location.search);if(!(q.get("report")==="1"||q.get("report")==="true"))return;var served=parseInt(q.get("served")||"",10);if(!served||served<=0)return;var total=parseInt(q.get("total")||"",10);var hours=parseFloat(q.get("hours")||"")||4;var bars=parseInt(q.get("bars")||"",10)||1;var maxCap=120*bars*hours;var reach=(total>0)?Math.round(served/total*100):null;var cap=(maxCap>0)?Math.min(100,Math.round(served/maxCap*100)):null;var useCap=(reach==null)||(cap!=null&&cap>reach);var card=document.getElementById("repPart");if(!card)return;var kl=card.parentElement.querySelector(".kl");var ks=card.parentElement.querySelector(".ks");if(useCap&&cap!=null){card.textContent=cap+"%";if(kl)kl.textContent="Capacity Utilization";if(ks)ks.textContent="ran near full - ~"+Math.round(served/hours)+"/hr";}else if(reach!=null){card.textContent=reach+"%";if(kl)kl.textContent="Guest Participation";if(ks)ks.textContent="of "+total.toLocaleString()+" guests";}}catch(_){}})();</script>
+<script>
+function shareReport(){ var url=location.href, title="OxygenBar360 — Post-Event Impact Report"; if(navigator.share){ navigator.share({title:title,text:"Our OxygenBar360 post-event report",url:url}).catch(function(){}); return; } try{ navigator.clipboard.writeText(url).then(function(){ obToast("Report link copied — paste it to your boss"); }, function(){ obToast(url); }); }catch(e){ obToast(url); } }
+function obToast(msg){ var t=document.getElementById("obShareToast"); if(!t){ t=document.createElement("div"); t.id="obShareToast"; t.style.cssText="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#0c2733;color:#eaf6f4;border:1px solid rgba(125,240,208,.32);border-radius:10px;padding:11px 18px;font:600 13px Outfit,sans-serif;z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.45)"; document.body.appendChild(t);} t.textContent=msg; t.style.opacity="1"; setTimeout(function(){ t.style.transition="opacity .4s"; t.style.opacity="0"; },2400); }
+</script>
 </body>
 </html>
