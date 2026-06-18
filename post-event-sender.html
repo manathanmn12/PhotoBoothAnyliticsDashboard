@@ -66,9 +66,10 @@
     <input id="evCustom" type="text" placeholder="…or type the event name exactly" style="margin-top:8px;display:none">
     <div class="hint">Pick from your booth events, or choose "Other" to type it.</div>
 
-    <label>Organizer email</label>
-    <input id="orgEmail" type="email" placeholder="planner@company.com">
-    <div class="hint">Must match their contact in GoHighLevel.</div>
+    <label>Recipients <span style="color:var(--mut);font-weight:400">— each gets their own report + email series, addressed to them</span></label>
+    <div id="recips"></div>
+    <button id="addRecip" type="button" style="margin-top:4px;background:none;border:1px dashed rgba(255,255,255,.22);color:#7df0d0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer">+ Add another recipient</button>
+    <div class="hint">The report is the same — only the name + emails change per person. Anyone not in GoHighLevel yet is added automatically.</div>
 
     <label>Total attendees (whole event)</label>
     <input id="total" type="number" min="0" placeholder="e.g. 350">
@@ -125,6 +126,7 @@
     $("loginCard").style.display="none"; $("mainCard").style.display="";
     $("whoEmail").textContent=(AUTH&&AUTH.email)||OWNER;
     loadEvents();
+    if($("recips")&&!$("recips").children.length) recipRow();
   }
   function showLogin(){ $("mainCard").style.display="none"; $("loginCard").style.display=""; $("liEmail").value=(AUTH&&AUTH.email)||OWNER; }
 
@@ -155,44 +157,69 @@
 
   function msg(el,t,cls){ el.className="msg "+(cls||""); el.textContent=t; el.style.display="block"; }
 
-  function callPush(doSend){
-    var ev=eventName(), email=$("orgEmail").value.trim(), total=$("total").value.trim();
+  function recipRow(name,email){
+    var row=document.createElement("div"); row.className="recip-row";
+    row.style.cssText="display:flex;gap:8px;margin-bottom:8px;align-items:center";
+    var n=document.createElement("input"); n.className="r-name"; n.type="text"; n.placeholder="First name"; n.style.cssText="flex:0 0 38%"; n.value=name||"";
+    var em=document.createElement("input"); em.className="r-email"; em.type="email"; em.placeholder="email@company.com"; em.style.cssText="flex:1"; em.value=email||"";
+    var del=document.createElement("button"); del.className="r-del"; del.type="button"; del.title="Remove"; del.textContent="×";
+    del.style.cssText="flex:0 0 auto;background:none;border:1px solid rgba(255,255,255,.2);color:var(--mut,#9aa);border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:18px;line-height:1";
+    row.appendChild(n); row.appendChild(em); row.appendChild(del);
+    $("recips").appendChild(row);
+  }
+  function getRecips(){
+    return [].slice.call(document.querySelectorAll(".recip-row")).map(function(row){
+      return { name:(row.querySelector(".r-name").value||"").trim(), email:(row.querySelector(".r-email").value||"").trim() };
+    }).filter(function(r){ return r.email; });
+  }
+
+  async function callPush(doSend){
+    var ev=eventName();
+    if(!ev){ msg($("msg"),"Pick or type an event name.","err"); return; }
     var bagsV=(($("bags")&&$("bags").value)||"").trim();
     var bagsNum=parseFloat(bagsV);
     var served=$("served").value.trim()||(bagsNum>0?String(Math.round(bagsNum*20)):"");
     var returned=(($("returned")&&$("returned").value)||"").trim();
-    if(!ev){ msg($("msg"),"Pick or type an event name.","err"); return; }
-    if(doSend && !email){ msg($("msg"),"Enter the organizer's email to send the series.","err"); return; }
-    var btn = doSend?$("sendBtn"):$("previewBtn"); btn.disabled=true;
-    msg($("msg"), doSend?"Sending… setting links + firing the series.":"Building the report link…","ok");
-    var body={ event_name:ev, served:served, total:total, bags:bagsV, returned:returned, hours:(($("hours")&&$("hours").value)||"").trim(), bars:(($("bars")&&$("bars").value)||"").trim() };
-    if(doSend) body.email=email;
+    var shared={ event_name:ev, served:served, total:$("total").value.trim(), bags:bagsV, returned:returned, hours:(($("hours")&&$("hours").value)||"").trim(), bars:(($("bars")&&$("bars").value)||"").trim() };
+    var recips=getRecips();
+    if(doSend && !recips.length){ msg($("msg"),"Add at least one recipient email to send.","err"); return; }
+    var btn=doSend?$("sendBtn"):$("previewBtn"); btn.disabled=true;
     var headers={ "Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+(AUTH&&AUTH.access_token||"") };
 
-    function go(){ return fetch(AUTOPUSH,{method:"POST",headers:headers,body:JSON.stringify(body)})
-      .then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); }); }
+    function go(body){
+      return fetch(AUTOPUSH,{method:"POST",headers:headers,body:JSON.stringify(body)})
+        .then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); })
+        .then(function(res){
+          if(res.status===401){ return refresh().then(function(s){ if(!s) throw new Error("Session expired — sign in again."); headers.Authorization="Bearer "+s.access_token;
+            return fetch(AUTOPUSH,{method:"POST",headers:headers,body:JSON.stringify(body)}).then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); }); }); }
+          return res;
+        });
+    }
+    function showLinks(d){ $("u_report").textContent=d.report_link||"—"; $("u_recap").textContent=d.recap_link||"—"; $("u_gallery").textContent=d.gallery_link||"—"; $("links").style.display="block"; }
 
-    go().then(function(res){
-      if(res.status===401){ return refresh().then(function(s){ if(!s){ throw new Error("Session expired — sign in again."); } headers.Authorization="Bearer "+s.access_token; return go(); }); }
-      return res;
-    }).then(function(res){
-      var d=res.d||{};
-      if(res.status>=400 || d.ok===false){ throw new Error(d.error||("Request failed ("+res.status+")")); }
-      // show links
-      $("u_report").textContent=d.report_link||"—";
-      $("u_recap").textContent=d.recap_link||"—";
-      $("u_gallery").textContent=d.gallery_link||"—";
-      $("links").style.display="block";
-      if(doSend){
-        var g=d.ghl||{};
-        if(g.ok){ msg($("msg"),"✓ Sent. Links set on the contact + post-event series is firing. ("+(g.fields_set||0)+" fields set)","ok"); }
-        else if(g.step==="contact_not_found"){ msg($("msg"),"Report link built, but no GoHighLevel contact matches "+email+". Add/relabel the contact, then resend.","err"); }
-        else { msg($("msg"),"Report link built. GHL step: "+(g.step||"unknown")+".","err"); }
+    try{
+      if(!doSend){
+        msg($("msg"),"Building the report link…","ok");
+        var pbody=Object.assign({}, shared); if(recips[0]&&recips[0].name) pbody.organizer=recips[0].name;
+        var res=await go(pbody); var d=res.d||{};
+        if(res.status>=400||d.ok===false) throw new Error(d.error||("Request failed ("+res.status+")"));
+        showLinks(d); msg($("msg"),"Preview only — nothing sent. Report link is below.","ok");
       } else {
-        msg($("msg"),"Preview only — nothing sent. Report link is below.","ok");
+        msg($("msg"),"Sending to "+recips.length+" recipient"+(recips.length>1?"s":"")+"…","ok");
+        var results=[];
+        for(var i=0;i<recips.length;i++){
+          var rb=Object.assign({}, shared, { email:recips[i].email, organizer:recips[i].name });
+          var r2=await go(rb); var d2=r2.d||{}; var g=(d2&&d2.ghl)||{};
+          var okk=(r2.status<400 && d2.ok!==false && g.ok);
+          results.push({ who:(recips[i].name||recips[i].email), ok:okk, step:g.step });
+          if(i===0 && d2.report_link) showLinks(d2);
+        }
+        var okN=results.filter(function(r){return r.ok;}).length;
+        var lines=results.map(function(r){ return (r.ok?"✓ ":"✗ ")+r.who+(r.ok?"":" ("+(r.step||"failed")+")"); }).join("   ·   ");
+        msg($("msg"), okN+"/"+results.length+" sent.  "+lines, okN===results.length?"ok":"err");
       }
-    }).catch(function(e){ msg($("msg"), e.message||"Something went wrong.","err"); })
-      .then(function(){ btn.disabled=false; });
+    }catch(e){ msg($("msg"), e.message||"Something went wrong.","err"); }
+    btn.disabled=false;
   }
 
   document.addEventListener("click",function(e){
@@ -200,12 +227,18 @@
       var id=e.target.getAttribute("data-c"); var t=$(id)?$(id).textContent:"";
       if(t&&t!=="—"){ navigator.clipboard&&navigator.clipboard.writeText(t); e.target.textContent="Copied"; setTimeout(function(){e.target.textContent="Copy";},1500); }
     }
+    if(e.target&&e.target.classList&&e.target.classList.contains("r-del")){
+      var rows=document.querySelectorAll(".recip-row"); var row=e.target.parentNode;
+      if(rows.length>1){ row.parentNode.removeChild(row); }
+      else { row.querySelector(".r-name").value=""; row.querySelector(".r-email").value=""; }
+    }
   });
 
   $("liBtn").addEventListener("click",signIn);
   $("liPass").addEventListener("keydown",function(e){ if(e.key==="Enter") signIn(); });
   $("sendBtn").addEventListener("click",function(){ callPush(true); });
   $("previewBtn").addEventListener("click",function(){ callPush(false); });
+  $("addRecip").addEventListener("click",function(){ recipRow(); });
   $("signout").addEventListener("click",function(){ save(null); showLogin(); });
   $("evSelect").addEventListener("change",function(){ $("evCustom").style.display = ($("evSelect").value==="__other__")?"block":"none"; });
 
