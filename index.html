@@ -2301,32 +2301,46 @@ function obToast(msg){ var t=document.getElementById("obShareToast"); if(!t){ t=
     if(!anchor) return;
     var part=(total>0)?Math.round(served/total*100):null;
     var maxCap=120*bars*hours;
-    var capUsed=(maxCap>0)?Math.min(100,Math.round(served/maxCap*100)):null;
+    var util=(maxCap>0)?(served/maxCap):null;
+    var capUsed=(util!=null)?Math.min(100,Math.round(util*100)):null;
+    var avg=5;
+    if(util!=null){ avg=Math.round(5 + 5*(1-Math.min(util,1))); }
+    avg=Math.max(5,Math.min(10,avg));
+    var collectiveHrs=Math.max(1,Math.round(served*avg/60));
+    var rec=document.getElementById("repRecovery"); if(rec) rec.textContent="~"+collectiveHrs+" hrs";
     var lean=(part!=null)?part:(capUsed!=null?capUsed:50);
     var pos=Math.max(4,Math.min(96,lean));
     var midLabel,midVal,midSub;
     if(part!=null){ midLabel="Guest Participation"; midVal=part+"%"; midSub=served.toLocaleString()+" of "+total.toLocaleString()+" attendees"; }
     else { midLabel="Guests Served"; midVal=served.toLocaleString(); midSub="cannulas dispensed"; }
-    var leanTxt=(part!=null)?(part+"% participation"):(served.toLocaleString()+" served");
-    var cap,narr;
-    if(lean<45){
-      cap="This activation leaned toward depth — fewer guests, longer resets.";
-      narr="At <b>"+leanTxt+"</b>, this activation prioritized <b>depth</b>: the guests who came got an unhurried, one-on-one reset rather than a quick walk-up"+((capUsed!=null&&capUsed<70)?", with capacity to spare":"")+". Fewer, deeper sessions that land.";
-    } else if(lean<=65){
-      cap="This activation balanced reach and depth.";
-      narr="At <b>"+leanTxt+"</b>, this activation struck a <b>balance</b> — broad enough to make an impression across the room, with each guest still getting a real reset.";
+    var sub,cap,narr;
+    if(lean<50){
+      sub="Fewer guests — and a deeper reset for each. Here is the upside.";
+      cap="Depth over volume — longer, unhurried sessions.";
+      narr="Your activation went <b>deep</b>: with a lighter bar, each guest averaged an unhurried <b>~"+avg+"-minute</b> reset — longer than the standard 5 — for <b>~"+collectiveHrs+" hours</b> of guided oxygen delivered. You gave your "+(part!=null?("most engaged "+part+"%"):(served.toLocaleString()+" guests"))+" a premium experience, with clear headroom to reach more next time.";
+    } else if(lean<=70){
+      sub="A strong balance of reach and depth.";
+      cap="Balanced — broad reach, full sessions.";
+      narr="A strong <b>balance</b>: "+(part!=null?(part+"% of the room"):(served.toLocaleString()+" guests"))+" recharged, each with a full <b>~"+avg+"-minute</b> reset — <b>~"+collectiveHrs+" hours</b> of guided oxygen in all. Broad enough to land across the room, deep enough that every session counted.";
     } else {
-      cap="This activation leaned toward reach — more guests, focused sessions.";
-      narr="At <b>"+leanTxt+"</b>, this activation <b>maximized reach</b> — most of the room stepped up to the bar, with focused sessions keeping the line moving.";
+      sub="Big reach across your guest list.";
+      cap="Reach — most of the room, focused sessions.";
+      narr="<b>Maximum reach</b>: "+(part!=null?(part+"% of your room"):(served.toLocaleString()+" guests"))+" stepped up to the bar, each still getting a solid <b>~"+avg+"-minute</b> reset — <b>~"+collectiveHrs+" hours</b> of guided oxygen delivered. Exposure across nearly your whole guest list.";
     }
+    var featAvg=(lean<50);
+    function card(accent,label,val,subt,feat){
+      return '<div class="kpi '+accent+'" style="'+(feat?"border-color:var(--stroke-2);background:linear-gradient(135deg,rgba(125,240,208,.14),rgba(70,199,232,.08))":"")+'">'
+        +'<div class="kl">'+label+'</div><div class="kv"'+(feat?' style="color:var(--mint)"':"")+'>'+val+'</div><div class="ks">'+subt+'</div></div>';
+    }
+    var perHr=120*bars;
     var html=''
     +'<div class="section" id="rDialSection">'
     +'<div class="stitle">The Reach &harr; Depth Dial</div>'
-    +'<div class="ssub">Why your participation rate is a design choice — and how we tune it</div>'
+    +'<div class="ssub">'+sub+'</div>'
     +'<div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">'
-    +'<div class="kpi a1"><div class="kl">Avg. Time / Guest</div><div class="kv">~4<small> min</small></div><div class="ks">typical unhurried reset*</div></div>'
-    +'<div class="kpi a2"><div class="kl">'+midLabel+'</div><div class="kv">'+midVal+'</div><div class="ks">'+midSub+'</div></div>'
-    +'<div class="kpi a3"><div class="kl">Bar Capacity Used</div><div class="kv">'+(capUsed!=null?capUsed+"%":"&mdash;")+'</div><div class="ks">room to go wider or deeper</div></div>'
+    +card("a1","Avg. Time / Guest","~"+avg+'<small> min</small>',"unhurried oxygen + aroma reset*",featAvg)
+    +card("a2",midLabel,midVal,midSub,false)
+    +card("a3","Bar Capacity Used",(capUsed!=null?capUsed+"%":"&mdash;"),"of "+perHr+"/hr × "+hours+"h — room to grow",false)
     +'</div>'
     +'<div style="background:linear-gradient(160deg,var(--panel),rgba(12,39,51,.3));border:1px solid var(--stroke);border-radius:16px;padding:18px 20px;margin-top:14px">'
     +'<div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-faint)">'
@@ -2341,7 +2355,7 @@ function obToast(msg){ var t=document.getElementById("obShareToast"); if(!t){ t=
     +'</div>'
     +'<div style="display:flex;gap:14px;align-items:flex-start;background:rgba(125,240,208,.06);border:1px solid var(--stroke);border-radius:14px;padding:15px 18px;margin-top:14px">'
     +'<div style="font-size:19px">🎛️</div>'
-    +'<div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6"><b style="color:var(--mint)">It\'s a dial we set with you.</b> Want to reach more of the room next time? A second bar or more ports moves guests through faster. Want an even deeper reset? Add our VR experience. Average time per guest is modeled from a typical oxygen + aromatherapy session — participation and session length move inversely for a fixed setup.</div>'
+    +'<div style="font-size:12.5px;color:var(--ink-soft);line-height:1.6"><b style="color:var(--mint)">It\'s a dial we set with you.</b> Want to reach more of the room next time? A second bar or more ports moves guests through faster. Want an even deeper reset? Add our VR experience. Time per guest is modeled from your bar setup (5-min sessions at '+perHr+'/hr, '+hours+'h) — participation and session length move inversely.</div>'
     +'</div>'
     +'</div>';
     anchor.insertAdjacentHTML("afterend", html);
