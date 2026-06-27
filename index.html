@@ -463,6 +463,7 @@
       <button id="copyRecapLinkBtn">🔗 Event Links</button>
       <button id="toHistoryBtn">📚 History</button> <button id="postEventBtn" onclick="window.open('post-event-sender.html','_blank')">📨 Post-Event</button>
       <button id="uploadPhotosBtn">📤 Upload Photos</button>
+      <button id="socialPackBtn">📐 Social Pack</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
   </header>
@@ -577,6 +578,38 @@
     <div class="mbtns">
       <button class="cancel" id="modalCancel">Cancel</button>
       <button class="confirm" id="modalConfirm">Archive & Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL PACK modal -->
+<div class="modal-bg" id="socialModalBg">
+  <div class="modal" style="max-width:640px">
+    <h3>📐 Social Pack</h3>
+    <p>Pick an event — every photo submitted to it is auto-resized to the platform formats you choose, ready to post (no manual cropping). Your booth photos are already brand-wrapped, so this just sizes them natively for each platform.</p>
+
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Which event?</label>
+      <select id="spEvent" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px;-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%237df0d0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 13px center">
+        <option value="">— Select event —</option>
+      </select>
+    </div>
+
+    <div style="font-size:12px;color:var(--ink-faint);margin-bottom:6px">Formats <span style="opacity:.6">· tap to toggle</span></div>
+    <div id="spFormats" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;color:var(--ink-faint)">Photos <span id="spCount" style="opacity:.6"></span></div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0;cursor:pointer"><input type="checkbox" id="spMark" checked style="accent-color:#7df0d0"> small @oxygenbar360 mark</label>
+    </div>
+    <div id="spGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:7px;max-height:230px;overflow-y:auto;padding:2px"></div>
+
+    <div id="spProg" style="display:none;height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:14px"><i style="display:block;height:100%;width:0;background:var(--mint);transition:width .25s"></i></div>
+    <div id="spMsg" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);margin-top:10px;min-height:16px"></div>
+
+    <div class="mbtns" style="margin-top:16px">
+      <button class="cancel" id="spCancel">Close</button>
+      <button class="confirm" id="spGo" style="background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b" disabled>Build &amp; download ZIP</button>
     </div>
   </div>
 </div>
@@ -1314,6 +1347,102 @@
     var up=$u("upPick"); if(up) up.addEventListener("change",function(e){ addUp(e.target.files); e.target.value=""; });
     var ue=$u("upEvent"); if(ue) ue.addEventListener("change",btnLabel);
     var ug=$u("upGo"); if(ug) ug.addEventListener("click",runUp);
+  })();
+
+  // ===== SOCIAL PACK (per-event auto-resize to platform formats) =====
+  (function(){
+    var $s=function(id){return document.getElementById(id);};
+    var JSZIP="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+    var FMTS=[
+      {key:"story-reels-tiktok",name:"Story-Reels-TikTok",w:1080,h:1920,def:true},
+      {key:"instagram-portrait",name:"Instagram-Portrait",w:1080,h:1350,def:true},
+      {key:"square-ig-linkedin",name:"Square-IG-LinkedIn",w:1080,h:1080,def:true},
+      {key:"facebook",name:"Facebook",w:1200,h:1500,def:false},
+      {key:"pinterest",name:"Pinterest",w:1000,h:1500,def:false},
+      {key:"landscape-x",name:"Landscape-X",w:1600,h:900,def:false}
+    ];
+    var fmtOn={}; FMTS.forEach(function(f){fmtOn[f.key]=f.def;});
+    var photos=[];   // {id,src,sel}
+    function slugEv(){ return ($s("spEvent").value||"event").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").slice(0,40)||"event"; }
+    function renderFmts(){
+      $s("spFormats").innerHTML=FMTS.map(function(f){
+        return '<button type="button" data-k="'+f.key+'" style="font-family:inherit;font-size:12px;border-radius:8px;padding:8px 12px;cursor:pointer;border:1px solid '+(fmtOn[f.key]?'var(--mint)':'var(--stroke-2)')+';background:'+(fmtOn[f.key]?'rgba(125,240,208,.16)':'var(--glass)')+';color:'+(fmtOn[f.key]?'var(--mint)':'var(--ink-soft)')+'">'+f.name.replace(/-/g," / ")+' · '+f.w+'×'+f.h+'</button>';
+      }).join("");
+    }
+    function setBtn(){ var nf=FMTS.filter(function(f){return fmtOn[f.key];}).length; var np=photos.filter(function(p){return p.sel;}).length; $s("spGo").disabled=(nf===0||np===0); $s("spGo").textContent=np&&nf?("Build "+(np*nf)+" images → ZIP"):"Build & download ZIP"; $s("spCount").textContent=photos.length?("· "+np+"/"+photos.length+" selected"):""; }
+    function loadPhotos(ev){
+      photos=[]; $s("spGrid").innerHTML='<div style="color:var(--ink-faint);font-size:12px;padding:14px">Loading…</div>'; setBtn();
+      if(!ev||!SUPA_READY){ $s("spGrid").innerHTML=""; return; }
+      sb("booth_photos?event_name=eq."+encodeURIComponent(ev)+"&select=id,cloud_url,image_url,created_at&order=created_at.asc&limit=2000").then(function(rows){
+        photos=(rows||[]).map(function(r){return {id:r.id, src:(r.cloud_url||r.image_url), sel:true};}).filter(function(p){return p.src;});
+        if(!photos.length){ $s("spGrid").innerHTML='<div style="color:var(--ink-faint);font-size:12px;padding:14px">No photos in this event yet.</div>'; setBtn(); return; }
+        $s("spGrid").innerHTML="";
+        photos.forEach(function(p,i){
+          var d=document.createElement("div"); d.style.cssText="position:relative;aspect-ratio:9/16;border-radius:6px;overflow:hidden;border:2px solid var(--mint);cursor:pointer;background:#0a1a22";
+          var im=document.createElement("img"); im.src=p.src; im.style.cssText="width:100%;height:100%;object-fit:cover;display:block";
+          var ck=document.createElement("div"); ck.textContent="✓"; ck.style.cssText="position:absolute;top:3px;right:4px;font-size:12px;color:#04221b;background:var(--mint);border-radius:50%;width:17px;height:17px;display:flex;align-items:center;justify-content:center;font-weight:700";
+          d.appendChild(im); d.appendChild(ck);
+          d.addEventListener("click",function(){ p.sel=!p.sel; d.style.borderColor=p.sel?"var(--mint)":"rgba(234,246,244,.15)"; ck.style.display=p.sel?"flex":"none"; im.style.opacity=p.sel?"1":".4"; setBtn(); });
+          $s("spGrid").appendChild(d);
+        });
+        setBtn();
+      }).catch(function(){ $s("spGrid").innerHTML='<div style="color:var(--coral);font-size:12px;padding:14px">Couldn\'t load photos.</div>'; });
+    }
+    function loadImg(src){ return new Promise(function(res,rej){ var im=new Image(); if(/^https?:/.test(src)) im.crossOrigin="anonymous"; im.onload=function(){res(im);}; im.onerror=function(){rej(new Error("img"));}; im.src=src; }); }
+    function compose(im,f,mark){
+      var c=document.createElement("canvas"); c.width=f.w; c.height=f.h; var ctx=c.getContext("2d");
+      ctx.fillStyle="#06141b"; ctx.fillRect(0,0,f.w,f.h);
+      var ir=im.width/im.height, tr=f.w/f.h, dw,dh;
+      if(ir>tr){dh=f.h;dw=f.h*ir;}else{dw=f.w;dh=f.w/ir;}
+      var dx=(f.w-dw)*0.5, dy=(f.h-dh)*0.42; dx=Math.min(0,Math.max(f.w-dw,dx)); dy=Math.min(0,Math.max(f.h-dh,dy));
+      ctx.drawImage(im,dx,dy,dw,dh);
+      if(mark){ var ms=Math.round(f.w*0.024), pad=Math.round(f.w*0.04), y=f.h-pad;
+        ctx.font="700 "+ms+"px 'Outfit'"; ctx.textBaseline="alphabetic";
+        ctx.shadowColor="rgba(0,0,0,0.6)"; ctx.shadowBlur=8; ctx.shadowOffsetY=1;
+        ctx.fillStyle="#fff"; ctx.fillText("@oxygenbar",pad,y); var w=ctx.measureText("@oxygenbar").width;
+        ctx.fillStyle="#7df0d0"; ctx.fillText("360",pad+w,y); ctx.shadowColor="transparent"; }
+      return c.toDataURL("image/jpeg",0.9);
+    }
+    function u8(d){ var b=atob(d.split(",")[1]),n=b.length,a=new Uint8Array(n); for(var i=0;i<n;i++)a[i]=b.charCodeAt(i); return a; }
+    function loadZip(){ return new Promise(function(res,rej){ if(window.JSZip)return res(window.JSZip); var s=document.createElement("script"); s.src=JSZIP; s.onload=function(){res(window.JSZip);}; s.onerror=rej; document.head.appendChild(s); }); }
+    async function build(){
+      var fmts=FMTS.filter(function(f){return fmtOn[f.key];});
+      var sel=photos.filter(function(p){return p.sel;});
+      if(!fmts.length||!sel.length) return;
+      var mark=$s("spMark").checked;
+      $s("spGo").disabled=true; $s("spProg").style.display="block"; var bar=$s("spProg").firstElementChild;
+      var JSZip; try{ JSZip=await loadZip(); }catch(e){ $s("spMsg").textContent="Couldn't load the zip tool."; $s("spGo").disabled=false; return; }
+      var zip=new JSZip(), root=zip.folder("OB360-"+slugEv()+"-social"); var folders={}; fmts.forEach(function(f){folders[f.key]=root.folder(f.name);});
+      var done=0, fail=0;
+      for(var i=0;i<sel.length;i++){
+        $s("spMsg").textContent="Processing photo "+(i+1)+" of "+sel.length+"…";
+        try{ var im=await loadImg(sel[i].src);
+          fmts.forEach(function(f){ try{ folders[f.key].file(slugEv()+"-"+String(i+1).padStart(2,"0")+".jpg", u8(compose(im,f,mark))); }catch(e){} });
+          done++;
+        }catch(e){ fail++; }
+        bar.style.width=Math.round((i+1)/sel.length*100)+"%";
+      }
+      $s("spMsg").textContent="Zipping…";
+      try{ var blob=await zip.generateAsync({type:"blob"}); var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="OB360-"+slugEv()+"-social.zip"; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
+        $s("spMsg").textContent="Done — "+done+" photos × "+fmts.length+" formats"+(fail?(", "+fail+" skipped"):"")+". ZIP downloaded, organized by platform.";
+      }catch(e){ $s("spMsg").textContent="ZIP build failed."; }
+      $s("spGo").disabled=false;
+    }
+    function fillEvents(){
+      if(!SUPA_READY) return;
+      sb("booth_events?select=evt_event_name,created_at&order=created_at.desc&limit=10000").then(function(rows){
+        var names=[...new Set(rows.map(function(r){return r.evt_event_name;}).filter(Boolean))];
+        var sel=$s("spEvent"); var cur=$("#eventSelect").value;
+        sel.innerHTML='<option value="">— Select event —</option>'+names.map(function(n){return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>';}).join("");
+        if(cur&&cur!=="All Events"){ sel.value=cur; loadPhotos(cur); }
+      }).catch(function(){});
+    }
+    var b=$s("socialPackBtn");
+    if(b) b.addEventListener("click",function(){ photos=[]; $s("spGrid").innerHTML=""; $s("spMsg").textContent=""; $s("spProg").style.display="none"; $s("spProg").firstElementChild.style.width="0"; renderFmts(); fillEvents(); setBtn(); $s("socialModalBg").classList.add("show"); });
+    var sc=$s("spCancel"); if(sc) sc.addEventListener("click",function(){ $s("socialModalBg").classList.remove("show"); });
+    var se=$s("spEvent"); if(se) se.addEventListener("change",function(){ loadPhotos(se.value); });
+    var sf=$s("spFormats"); if(sf) sf.addEventListener("click",function(e){ var btn=e.target.closest("button[data-k]"); if(!btn)return; fmtOn[btn.dataset.k]=!fmtOn[btn.dataset.k]; renderFmts(); setBtn(); });
+    var sg=$s("spGo"); if(sg) sg.addEventListener("click",build);
   })();
 
   // close-out
