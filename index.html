@@ -462,6 +462,7 @@
       <button id="copyClientLinkBtn">🔗 Copy Client Link</button>
       <button id="copyRecapLinkBtn">🔗 Event Links</button>
       <button id="toHistoryBtn">📚 History</button> <button id="postEventBtn" onclick="window.open('post-event-sender.html','_blank')">📨 Post-Event</button>
+      <button id="uploadPhotosBtn">📤 Upload Photos</button>
       <button class="danger" id="closeoutBtn">⊘ Close Out Event</button>
     </div>
   </header>
@@ -576,6 +577,37 @@
     <div class="mbtns">
       <button class="cancel" id="modalCancel">Cancel</button>
       <button class="confirm" id="modalConfirm">Archive & Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD PHOTOS modal -->
+<div class="modal-bg" id="uploadModalBg">
+  <div class="modal" style="max-width:560px">
+    <h3>📤 Upload Photos to an Event</h3>
+    <p>Add photos straight from your phone or computer into an event's gallery + post-event report. Images are auto-shrunk so uploads are fast and reliable — your originals aren't changed.</p>
+
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--ink-faint);display:block;margin-bottom:6px">Which event?</label>
+      <select id="upEvent" style="width:100%;background:var(--glass);border:1px solid var(--stroke-2);color:var(--ink);font-family:inherit;font-size:15px;border-radius:10px;padding:12px 14px;-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%237df0d0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 13px center">
+        <option value="">— Select event —</option>
+      </select>
+    </div>
+
+    <div id="upDrop" style="border:1.5px dashed var(--stroke-2);border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer">
+      <div style="font-size:26px">📸</div>
+      <div style="font-weight:600;margin-top:6px">Tap to choose photos — or drag them here</div>
+      <div style="font-size:12px;color:var(--ink-faint);margin-top:3px">JPG / PNG / HEIC · select as many as you want</div>
+    </div>
+    <input type="file" id="upPick" accept="image/*" multiple style="display:none">
+    <div id="upGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:7px;margin-top:14px"></div>
+
+    <div id="upProg" style="display:none;height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:14px"><i style="display:block;height:100%;width:0;background:var(--mint);transition:width .25s"></i></div>
+    <div id="upMsg" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);margin-top:10px;min-height:16px"></div>
+
+    <div class="mbtns" style="margin-top:18px">
+      <button class="cancel" id="upCancel">Close</button>
+      <button class="confirm" id="upGo" style="background:linear-gradient(120deg,var(--mint),var(--aqua));color:#04221b" disabled>Upload 0 photos</button>
     </div>
   </div>
 </div>
@@ -1211,12 +1243,78 @@
   async function loadEvents(){
     if(!SUPA_READY) return;
     try{
-      const rows=await sb("booth_events?select=evt_event_name&limit=10000");
+      // order newest-first so recent events are never lost to the server row cap (~1000)
+      const rows=await sb("booth_events?select=evt_event_name,created_at&order=created_at.desc&limit=10000");
       const names=[...new Set(rows.map(r=>r.evt_event_name).filter(Boolean))];
       const sel=$("#eventSelect");
       names.forEach(n=>{const o=document.createElement("option");o.textContent=n;sel.appendChild(o);});
     }catch(_){}
   }
+
+  // ===== UPLOAD PHOTOS (built-in operator tool) =====
+  (function(){
+    var upItems=[];
+    var $u=function(id){return document.getElementById(id);};
+    function fillUpEvents(){
+      if(!SUPA_READY) return;
+      sb("booth_events?select=evt_event_name,created_at&order=created_at.desc&limit=10000").then(function(rows){
+        var names=[...new Set(rows.map(function(r){return r.evt_event_name;}).filter(Boolean))];
+        var sel=$u("upEvent"); var cur=$("#eventSelect").value;
+        sel.innerHTML='<option value="">— Select event —</option>'+names.map(function(n){return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>';}).join("");
+        if(cur && cur!=="All Events") sel.value=cur;
+        btnLabel();
+      }).catch(function(){});
+    }
+    function btnLabel(){ var n=upItems.filter(function(i){return i.status!=='done';}).length; $u("upGo").textContent="Upload "+n+" photo"+(n===1?"":"s"); $u("upGo").disabled=(n===0||!$u("upEvent").value); }
+    function addUp(files){
+      Array.prototype.forEach.call(files,function(f){
+        if(!/^image\//.test(f.type) && !/\.(heic|heif)$/i.test(f.name)) return;
+        var it={file:f,status:'idle'};
+        var fig=document.createElement('div'); fig.style.cssText="position:relative;aspect-ratio:1;border-radius:7px;overflow:hidden;border:1px solid var(--stroke);background:#0a1a22";
+        var img=document.createElement('img'); img.style.cssText="width:100%;height:100%;object-fit:cover;display:block";
+        var st=document.createElement('div'); st.style.cssText="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(4,12,16,.5);opacity:0;transition:opacity .2s";
+        fig.appendChild(img); fig.appendChild(st); $u("upGrid").appendChild(fig);
+        it.st=st; try{img.src=URL.createObjectURL(f);}catch(e){}
+        upItems.push(it);
+      });
+      btnLabel();
+    }
+    function compressUp(file){
+      return new Promise(function(res){
+        var url=URL.createObjectURL(file),img=new Image();
+        img.onload=function(){var w=img.naturalWidth,h=img.naturalHeight,m=1280;if(Math.max(w,h)>m){var s=m/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}var c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(url);try{res(c.toDataURL('image/jpeg',0.82));}catch(e){res(null);}};
+        img.onerror=function(){URL.revokeObjectURL(url);res(null);};img.src=url;
+      });
+    }
+    function insUp(ev,d,when,tries){
+      return fetch(SUPA_URL+"/rest/v1/booth_photos",{method:"POST",headers:{apikey:SUPA_KEY,Authorization:"Bearer "+SUPA_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({event_name:ev,image_url:d,src:"upload",created_at:when})}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);}).catch(function(e){if(tries>0)return new Promise(function(z){setTimeout(z,1500);}).then(function(){return insUp(ev,d,when,tries-1);});throw e;});
+    }
+    async function runUp(){
+      var ev=$u("upEvent").value; if(!ev){alert("Pick an event first");return;}
+      var todo=upItems.filter(function(i){return i.status!=='done';}); if(!todo.length)return;
+      $u("upGo").disabled=true; $u("upProg").style.display="block"; var bar=$u("upProg").firstElementChild; var ok=0,fail=0;
+      for(var i=0;i<todo.length;i++){var it=todo[i];it.st.style.opacity=1;it.st.textContent="…";it.st.style.color="var(--mint)";$u("upMsg").textContent="Uploading "+(i+1)+" of "+todo.length+"…";
+        try{var d=await compressUp(it.file);if(!d)throw new Error("read");var when=it.file.lastModified?new Date(it.file.lastModified).toISOString():new Date().toISOString();await insUp(ev,d,when,2);it.status='done';it.st.textContent="✓";it.st.style.color="var(--lime)";ok++;}
+        catch(e){it.status='err';it.st.textContent="✕";it.st.style.color="var(--coral)";fail++;}
+        bar.style.width=Math.round((i+1)/todo.length*100)+"%";}
+      $u("upMsg").textContent="Done — "+ok+" uploaded"+(fail?(", "+fail+" failed (tap Upload to retry)"):"")+". They're in the event's gallery + report now.";
+      btnLabel();
+      try{ if(typeof loadAll==="function") loadAll(); }catch(e){}
+    }
+    var ub=$u("uploadPhotosBtn");
+    if(ub) ub.addEventListener("click",function(){ upItems=[]; $u("upGrid").innerHTML=""; $u("upMsg").textContent=""; $u("upProg").style.display="none"; $u("upProg").firstElementChild.style.width="0"; fillUpEvents(); $u("uploadModalBg").classList.add("show"); });
+    var uc=$u("upCancel"); if(uc) uc.addEventListener("click",function(){ $u("uploadModalBg").classList.remove("show"); });
+    var ud=$u("upDrop");
+    if(ud){
+      ud.addEventListener("click",function(){ $u("upPick").click(); });
+      ud.addEventListener("dragover",function(e){e.preventDefault();ud.style.borderColor="var(--mint)";});
+      ud.addEventListener("dragleave",function(){ud.style.borderColor="var(--stroke-2)";});
+      ud.addEventListener("drop",function(e){e.preventDefault();ud.style.borderColor="var(--stroke-2)";addUp(e.dataTransfer.files);});
+    }
+    var up=$u("upPick"); if(up) up.addEventListener("change",function(e){ addUp(e.target.files); e.target.value=""; });
+    var ue=$u("upEvent"); if(ue) ue.addEventListener("change",btnLabel);
+    var ug=$u("upGo"); if(ug) ug.addEventListener("click",runUp);
+  })();
 
   // close-out
   $("#closeoutBtn").addEventListener("click",()=>{
@@ -2209,12 +2307,12 @@
   async function fillReportEvents(){
     if(!SUPA_URL||!SUPA_KEY) return;
     try{
-      const r=await fetch(SUPA_URL+"/rest/v1/booth_events?select=evt_event_name&limit=10000",
+      const r=await fetch(SUPA_URL+"/rest/v1/booth_events?select=evt_event_name,created_at&order=created_at.desc&limit=10000",
         {headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
       const rows=await r.json();
       let names=[...new Set(rows.map(x=>x.evt_event_name).filter(Boolean))];
-      // also pull from booth_sessions in case events table is sparse
-      const r2=await fetch(SUPA_URL+"/rest/v1/booth_sessions?select=event_name&limit=10000",
+      // also pull from booth_sessions in case events table is sparse (newest-first)
+      const r2=await fetch(SUPA_URL+"/rest/v1/booth_sessions?select=event_name,started_at&order=started_at.desc&limit=10000",
         {headers:{"apikey":SUPA_KEY,"Authorization":"Bearer "+SUPA_KEY}});
       const rows2=await r2.json();
       rows2.map(x=>x.event_name).filter(Boolean).forEach(n=>{ if(!names.includes(n)) names.push(n); });
